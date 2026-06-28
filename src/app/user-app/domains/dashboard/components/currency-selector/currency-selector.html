@@ -1,0 +1,8 @@
+<label class="currency">
+  <span>Moneda</span>
+  <select [value]="monedaSeleccionada" (change)="cambiarMoneda($any($event.target).value)">
+    @for (moneda of monedas; track moneda.codigo) {
+      <option [value]="moneda.codigo">{{ moneda.codigo }} - {{ moneda.nombre }}</option>
+    }
+  </select>
+</label>

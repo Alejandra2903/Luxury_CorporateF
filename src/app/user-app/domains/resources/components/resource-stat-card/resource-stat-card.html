@@ -1,0 +1,11 @@
+<article
+  class="stat"
+  [class.stat--warning]="tone === 'warning'"
+  [class.stat--danger]="tone === 'danger'"
+>
+  <span>{{ label }}</span>
+  <strong>{{ value }}</strong>
+  @if (detail) {
+    <small>{{ detail }}</small>
+  }
+</article>

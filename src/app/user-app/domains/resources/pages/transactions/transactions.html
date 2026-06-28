@@ -1,0 +1,53 @@
+<section class="transactions-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Transacciones</p>
+      <h1>Transacciones de consumo</h1>
+      <p>Consulta mock de registros de consumo por sede, tipo de recurso y periodo.</p>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando transacciones mock...</div>
+  } @else {
+    <form class="filters" [formGroup]="filtros">
+      <label>
+        <span>Sede</span>
+        <select formControlName="sedeId">
+          <option [ngValue]="0">Todas las sedes</option>
+          @for (sede of sedes(); track sede.id) {
+            <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Recurso</span>
+        <select formControlName="tipoRecursoId">
+          <option [ngValue]="0">Todos los recursos</option>
+          @for (tipo of tipos(); track tipo.id) {
+            <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Periodo</span>
+        <input type="month" formControlName="periodo" />
+      </label>
+    </form>
+
+    <div class="stat-grid">
+      <app-resource-stat-card label="Registros" [value]="consumosFiltrados().length.toString()" detail="Segun filtros" />
+      <app-resource-stat-card label="Costo filtrado" [value]="formatearMonto(totalCosto())" detail="Moneda PEN" />
+      <app-resource-stat-card
+        label="Observados"
+        [value]="observados().toString()"
+        detail="Pendientes de revision"
+        [tone]="observados() > 0 ? 'warning' : 'neutral'"
+      />
+    </div>
+
+    <app-consumption-table [consumos]="consumosFiltrados()" />
+  }
+</section>

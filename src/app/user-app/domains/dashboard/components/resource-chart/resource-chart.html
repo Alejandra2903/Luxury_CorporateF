@@ -1,0 +1,26 @@
+<section class="panel">
+  <header>
+    <div>
+      <span>Consumo por sede</span>
+      <h2>Recursos y costo total</h2>
+    </div>
+  </header>
+
+  <div class="table">
+    @for (sede of sedes; track sede.sedeId) {
+      <article>
+        <div class="site">
+          <strong>{{ sede.sede }}</strong>
+          <span>{{ sede.energiaKwh.toLocaleString('es-PE') }} kWh / {{ sede.aguaM3.toLocaleString('es-PE') }} m3</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="anchoCosto(sede.costoTotal)"></div>
+        </div>
+        <div class="cost">
+          <strong>{{ formatearMonto(sede.costoTotal) }}</strong>
+          <span>{{ sede.alertas }} alertas</span>
+        </div>
+      </article>
+    }
+  </div>
+</section>

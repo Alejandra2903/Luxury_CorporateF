@@ -1,0 +1,37 @@
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Sede</th>
+        @if (mostrarTipo) {
+          <th>Recurso</th>
+        }
+        <th>Periodo</th>
+        <th>Cantidad</th>
+        <th>Costo</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (consumo of consumos; track consumo.id) {
+        <tr>
+          <td>
+            <strong>{{ consumo.sedeNombre }}</strong>
+            <span>{{ consumo.fechaRegistro | date: 'dd/MM/yyyy' }}</span>
+          </td>
+          @if (mostrarTipo) {
+            <td>{{ consumo.tipoRecursoNombre }}</td>
+          }
+          <td>{{ consumo.periodo }}</td>
+          <td>{{ consumo.cantidad.toLocaleString('es-PE') }} {{ consumo.unidad }}</td>
+          <td>{{ formatearMonto(consumo.costo) }}</td>
+          <td><span [class]="claseEstado(consumo.estado)">{{ consumo.estado }}</span></td>
+        </tr>
+      } @empty {
+        <tr>
+          <td class="empty" [attr.colspan]="mostrarTipo ? 6 : 5">No hay consumos para los filtros seleccionados.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

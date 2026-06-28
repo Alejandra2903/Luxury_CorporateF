@@ -1,0 +1,239 @@
+<section class="rules-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Reglas</p>
+      <h1>Reglas de negocio</h1>
+      <p>Tarifas, umbrales y alertas operativas preparadas para el contrato REST real.</p>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando reglas mock...</div>
+  } @else {
+    @if (mensaje()) {
+      <div class="message">{{ mensaje() }}</div>
+    }
+
+    @if (resumen(); as data) {
+      <div class="stat-grid">
+        <article class="stat">
+          <span>Tarifas vigentes</span>
+          <strong>{{ tarifasVigentes().length }}</strong>
+          <small>GET /api/tarifas</small>
+        </article>
+        <article class="stat">
+          <span>Umbrales activos</span>
+          <strong>{{ umbralesActivos().length }}</strong>
+          <small>GET /api/umbrales</small>
+        </article>
+        <article class="stat">
+          <span>Alertas pendientes</span>
+          <strong>{{ alertasPendientes().length }}</strong>
+          <small>GET /api/alertas</small>
+        </article>
+        <article class="stat stat--danger">
+          <span>Criticas</span>
+          <strong>{{ data.alertasCriticas }}</strong>
+          <small>Atencion prioritaria</small>
+        </article>
+      </div>
+    }
+
+    <div class="forms-grid">
+      <form class="panel form-panel" [formGroup]="tarifaForm" (ngSubmit)="crearTarifa()">
+        <header>
+          <span>Nueva tarifa</span>
+          <strong>POST /api/tarifas</strong>
+        </header>
+
+        <div class="inline-fields">
+          <label>
+            <span>Sede</span>
+            <select formControlName="sedeId">
+              @for (sede of sedes(); track sede.id) {
+                <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Recurso</span>
+            <select formControlName="tipoRecursoId">
+              @for (tipo of tipos(); track tipo.id) {
+                <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="inline-fields">
+          <label>
+            <span>Moneda</span>
+            <select formControlName="monedaId">
+              @for (moneda of monedas(); track moneda.id) {
+                <option [ngValue]="moneda.id">{{ moneda.codigo }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Costo unitario</span>
+            <input type="number" step="0.001" formControlName="costoUnitario" />
+          </label>
+        </div>
+
+        <div class="inline-fields">
+          <label>
+            <span>Inicio</span>
+            <input type="date" formControlName="fechaInicio" />
+          </label>
+
+          <label>
+            <span>Fin opcional</span>
+            <input type="date" formControlName="fechaFin" />
+          </label>
+        </div>
+
+        <button type="submit" [disabled]="guardandoTarifa()">
+          {{ guardandoTarifa() ? 'Guardando' : 'Crear tarifa' }}
+        </button>
+      </form>
+
+      <form class="panel form-panel" [formGroup]="umbralForm" (ngSubmit)="crearUmbral()">
+        <header>
+          <span>Nuevo umbral</span>
+          <strong>POST /api/umbrales</strong>
+        </header>
+
+        <div class="inline-fields">
+          <label>
+            <span>Sede</span>
+            <select formControlName="sedeId">
+              @for (sede of sedes(); track sede.id) {
+                <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Recurso</span>
+            <select formControlName="tipoRecursoId">
+              @for (tipo of tipos(); track tipo.id) {
+                <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="inline-fields">
+          <label>
+            <span>Minimo</span>
+            <input type="number" formControlName="minimo" />
+          </label>
+
+          <label>
+            <span>Maximo</span>
+            <input type="number" formControlName="maximo" />
+          </label>
+        </div>
+
+        <label>
+          <span>Periodo</span>
+          <select formControlName="periodo">
+            <option value="DIARIO">Diario</option>
+            <option value="SEMANAL">Semanal</option>
+            <option value="MENSUAL">Mensual</option>
+          </select>
+        </label>
+
+        <button type="submit" [disabled]="guardandoUmbral()">
+          {{ guardandoUmbral() ? 'Guardando' : 'Crear umbral' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="tables-grid">
+      <section class="panel">
+        <header>
+          <span>Tarifas</span>
+          <strong>GET /api/tarifas/vigente?sedeId=&tipoRecursoId=</strong>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sede</th>
+                <th>Recurso</th>
+                <th>Costo</th>
+                <th>Vigencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tarifa of tarifas(); track tarifa.id) {
+                <tr>
+                  <td><strong>{{ tarifa.sedeNombre }}</strong></td>
+                  <td>{{ tarifa.tipoRecursoNombre }}</td>
+                  <td>{{ formatearMonto(tarifa.costoUnitario) }} {{ tarifa.monedaCodigo }}</td>
+                  <td><span class="status" [class.status--inactive]="!tarifa.vigente">{{ tarifa.vigente ? 'VIGENTE' : 'HISTORICA' }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <span>Umbrales</span>
+          <strong>PUT/DELETE /api/umbrales</strong>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sede</th>
+                <th>Recurso</th>
+                <th>Rango</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (umbral of umbrales(); track umbral.id) {
+                <tr>
+                  <td><strong>{{ umbral.sedeNombre }}</strong></td>
+                  <td>{{ umbral.tipoRecursoNombre }}</td>
+                  <td>{{ formatearNumero(umbral.minimo) }} a {{ formatearNumero(umbral.maximo) }} {{ umbral.unidad }}</td>
+                  <td><button type="button" class="row-action" (click)="eliminarUmbral(umbral)">Retirar</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel alerts-panel">
+      <header>
+        <span>Alertas</span>
+        <strong>PATCH /api/alertas/id/atender</strong>
+      </header>
+      <div class="alerts">
+        @for (alerta of alertas(); track alerta.id) {
+          <article>
+            <span [class]="claseSeveridad(alerta.severidad)">{{ alerta.severidad }}</span>
+            <div>
+              <strong>{{ alerta.sedeNombre }} / {{ alerta.tipoRecursoCodigo }}</strong>
+              <p>{{ alerta.mensaje }}</p>
+              @if (alerta.atendida) {
+                <small>Atendida por {{ alerta.atendidaPor }}</small>
+              }
+            </div>
+            <button type="button" class="row-action" [disabled]="alerta.atendida" (click)="atenderAlerta(alerta)">
+              {{ alerta.atendida ? 'Atendida' : 'Atender' }}
+            </button>
+          </article>
+        }
+      </div>
+    </section>
+  }
+</section>

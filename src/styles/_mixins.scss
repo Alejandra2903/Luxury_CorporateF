@@ -1,0 +1,59 @@
+@use 'sass:list';
+@use 'variables' as v;
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Tarjetas: borde hairline, sin sombra — la jerarquía la da el borde, no la elevación
+@mixin surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: v.$radius-md;
+}
+
+@mixin focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-muted);
+  border-color: var(--accent);
+}
+
+@mixin transition($props...) {
+  $list: if(list.length($props) == 0, all, $props);
+  transition-property: $list;
+  transition-duration: v.$duration-base;
+  transition-timing-function: v.$ease-out;
+}
+
+// Cifras: tabular-nums siempre, para que las columnas de datos alineen
+@mixin numeric {
+  font-family: v.$font-mono;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == sm {
+    @media (min-width: v.$breakpoint-sm) { @content; }
+  } @else if $breakpoint == md {
+    @media (min-width: v.$breakpoint-md) { @content; }
+  } @else if $breakpoint == lg {
+    @media (min-width: v.$breakpoint-lg) { @content; }
+  } @else if $breakpoint == xl {
+    @media (min-width: v.$breakpoint-xl) { @content; }
+  }
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
