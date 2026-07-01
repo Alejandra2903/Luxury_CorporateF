@@ -1,0 +1,126 @@
+<section class="admin-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administracion</p>
+      <h1>Usuarios</h1>
+    </div>
+  </header>
+
+  @if (mensaje()) {
+    <div class="message">{{ mensaje() }}</div>
+  }
+
+  <div class="admin-grid">
+    <form class="panel user-form" [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+      <header>
+        <span>{{ editandoId() ? 'Editar usuario' : 'Nuevo usuario' }}</span>
+      </header>
+
+      <div class="fields-two">
+        <label>
+          <span>Nombres</span>
+          <input id="user-nombres" type="text" formControlName="nombres" />
+        </label>
+
+        <label>
+          <span>Apellidos</span>
+          <input id="user-apellidos" type="text" formControlName="apellidos" />
+        </label>
+      </div>
+
+      <div class="fields-two">
+        <label for="user-tipo-documento">
+          <span>Tipo doc.</span>
+          <select id="user-tipo-documento" formControlName="tipoDocumento">
+            <option value="DNI">DNI</option>
+            <option value="CE">CE</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Numero</span>
+          <input id="user-numero-documento" type="text" formControlName="numeroDocumento" />
+        </label>
+      </div>
+
+      <label>
+        <span>Correo</span>
+        <input id="user-correo" type="email" formControlName="correo" />
+      </label>
+
+      <div class="fields-two">
+        <label>
+          <span>Telefono</span>
+          <input id="user-telefono" type="text" formControlName="telefono" />
+        </label>
+
+        <label for="user-roles">
+          <span>Rol</span>
+          <select id="user-roles" formControlName="roles">
+            @for (rol of roles; track rol) {
+              <option [value]="rol">{{ rol }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : editandoId() ? 'Actualizar' : 'Crear usuario' }}
+        </button>
+        @if (editandoId()) {
+          <button type="button" class="ghost-button" (click)="cancelarEdicion()">Cancelar</button>
+        }
+      </div>
+    </form>
+
+    <section class="panel users-panel">
+      <header>
+        <span>Usuarios registrados</span>
+      </header>
+
+      @if (cargando()) {
+        <div class="state">Cargando usuarios...</div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Documento</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Registro</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (usuario of usuarios(); track usuario.id) {
+                <tr>
+                  <td>
+                    <strong>{{ usuario.nombreCompleto }}</strong>
+                    <span>{{ usuario.correo }}</span>
+                  </td>
+                  <td>{{ usuario.tipoDocumento }} {{ usuario.numeroDocumento }}</td>
+                  <td>{{ usuario.roles }}</td>
+                  <td>
+                    <span class="status" [class.status--off]="!usuario.activo">
+                      {{ usuario.estado }}
+                    </span>
+                  </td>
+                  <td>{{ formatearFecha(usuario.fechaRegistro) }}</td>
+                  <td class="row-actions">
+                    <button type="button" class="row-button" (click)="editarUsuario(usuario)">Editar</button>
+                    <button type="button" class="row-button" (click)="cambiarEstado(usuario)">
+                      {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
+</section>

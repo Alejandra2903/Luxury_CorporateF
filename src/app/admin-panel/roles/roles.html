@@ -1,0 +1,25 @@
+<section class="admin-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administracion</p>
+      <h1>Roles</h1>
+    </div>
+  </header>
+
+  <div class="roles-grid">
+    @for (rol of roles; track rol.nombre) {
+      <article class="role-card">
+        <header>
+          <span>{{ rol.nombre }}</span>
+          <strong>{{ rol.accesos.length }} accesos</strong>
+        </header>
+        <p>{{ rol.descripcion }}</p>
+        <div class="chips">
+          @for (acceso of rol.accesos; track acceso) {
+            <span>{{ acceso }}</span>
+          }
+        </div>
+      </article>
+    }
+  </div>
+</section>

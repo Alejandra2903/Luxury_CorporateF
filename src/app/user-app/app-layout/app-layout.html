@@ -1,0 +1,118 @@
+<div class="app-stage">
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand__mark">L</span>
+        <strong>Luxury</strong>
+      </div>
+
+      <div class="topbar__actions">
+        <button
+          type="button"
+          class="icon-button"
+          (click)="alternarTema()"
+          [attr.aria-label]="'Cambiar a tema ' + (tema() === 'dark' ? 'claro' : 'oscuro')"
+        >
+          @if (tema() === 'dark') {
+            <span aria-hidden="true">&#9728;</span>
+          } @else {
+            <span aria-hidden="true">&#9790;</span>
+          }
+        </button>
+
+        @if (puedeVerNotificaciones()) {
+          <div class="header-menu">
+            <button
+              type="button"
+              class="icon-button icon-button--notification"
+              (click)="alternarNotificaciones()"
+              [class.is-active]="notificacionesAbiertas()"
+              [attr.aria-expanded]="notificacionesAbiertas()"
+              aria-label="Abrir notificaciones"
+            >
+              <span aria-hidden="true">&#128276;</span>
+              @if (pendientes() > 0) {
+                <span class="notification-badge">{{ pendientes() }}</span>
+              }
+            </button>
+
+            @if (notificacionesAbiertas()) {
+              <section class="header-popover notification-popover" aria-label="Notificaciones">
+                <div class="popover-header">
+                  <div>
+                    <span>Centro de avisos</span>
+                    <strong>{{ pendientes() }} pendientes</strong>
+                  </div>
+                  <button type="button" class="popover-link" (click)="marcarNotificacionesLeidas()">
+                    Marcar leidas
+                  </button>
+                </div>
+
+                <div class="notification-list">
+                  @for (notificacion of notificaciones(); track notificacion.id) {
+                    <article class="notification-item" [class.is-read]="notificacion.leida">
+                      <div>
+                        <span>{{ notificacion.tipo }}</span>
+                        <strong>{{ notificacion.titulo }}</strong>
+                        <p>{{ notificacion.detalle }}</p>
+                      </div>
+                      @if (!notificacion.leida) {
+                        <button
+                          type="button"
+                          class="notification-check"
+                          (click)="marcarNotificacionLeida(notificacion.id)"
+                          aria-label="Marcar notificacion como leida"
+                        >
+                          Listo
+                        </button>
+                      }
+                    </article>
+                  } @empty {
+                    <p class="notification-empty">No hay avisos pendientes.</p>
+                  }
+                </div>
+              </section>
+            }
+          </div>
+        }
+
+        <div class="header-menu">
+          <button
+            type="button"
+            class="profile-button"
+            (click)="alternarPerfil()"
+            [class.is-active]="perfilAbierto()"
+            [attr.aria-expanded]="perfilAbierto()"
+            aria-label="Abrir perfil"
+          >
+            <span class="profile-avatar" aria-hidden="true">{{ usuarioInicial() }}</span>
+          </button>
+
+          @if (perfilAbierto()) {
+            <section class="header-popover profile-popover" aria-label="Mi perfil">
+              <span class="profile-popover__eyebrow">Perfil</span>
+              <strong>{{ usuario()?.nombreCompleto }}</strong>
+              <p>{{ usuario()?.correo }}</p>
+              <div class="profile-popover__role">{{ usuario()?.roles }}</div>
+            </section>
+          }
+        </div>
+
+        <button type="button" class="text-button" (click)="cerrarSesion()">Salir</button>
+      </div>
+    </header>
+
+    <div class="workspace" [class.workspace--sidebar-expanded]="sidebarExpandido()">
+      <aside class="sidebar" [class.sidebar--expanded]="sidebarExpandido()">
+        <app-navigation
+          [expanded]="sidebarExpandido()"
+          (menuItemClick)="onMenuItemClick()"
+        />
+      </aside>
+
+      <main class="content">
+        <router-outlet />
+      </main>
+    </div>
+  </div>
+</div>

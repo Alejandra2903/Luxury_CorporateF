@@ -1,0 +1,138 @@
+<section class="audit-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Auditoria</p>
+      <h1>Auditoria y accesos</h1>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando auditoria...</div>
+  } @else {
+    @if (resumen(); as data) {
+      <div class="stat-grid">
+        <article class="stat">
+          <span>Auditorias</span>
+          <strong>{{ data.totalAuditorias }}</strong>
+        </article>
+        <article class="stat">
+          <span>Eventos acceso</span>
+          <strong>{{ data.totalEventosAcceso }}</strong>
+        </article>
+        <article class="stat stat--warning">
+          <span>Observados</span>
+          <strong>{{ data.eventosObservados }}</strong>
+          <small>Eventos no exitosos o revisables</small>
+        </article>
+        <article class="stat">
+          <span>Modulos</span>
+          <strong>{{ data.modulosAuditados }}</strong>
+          <small>Con actividad trazada</small>
+        </article>
+      </div>
+    }
+
+    <form class="panel filters" [formGroup]="filtroForm" (ngSubmit)="aplicarFiltros()">
+      <label>
+        <span>Usuario</span>
+        <select formControlName="usuarioId">
+          <option [ngValue]="0">Todos los usuarios</option>
+          @for (usuario of usuariosAuditados(); track usuario.id) {
+            <option [ngValue]="usuario.id">{{ usuario.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Modulo</span>
+        <select formControlName="modulo">
+          <option value="TODOS">Todos los modulos</option>
+          @for (modulo of modulos; track modulo) {
+            <option [value]="modulo">{{ modulo }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Aplicar filtros</button>
+        <button type="button" class="ghost" (click)="limpiarFiltros()">Limpiar</button>
+      </div>
+    </form>
+
+    <div class="tables-grid">
+      <section class="panel">
+        <header>
+          <span>Auditorias</span>
+          <strong>{{ auditoriasFiltradas().length }} registros</strong>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Usuario</th>
+                <th>Modulo</th>
+                <th>Accion</th>
+                <th>Detalle</th>
+                <th>Resultado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (auditoria of auditoriasFiltradas(); track auditoria.id) {
+                <tr>
+                  <td>{{ formatearFecha(auditoria.fechaEvento) }}</td>
+                  <td>
+                    <strong>{{ auditoria.usuarioNombre }}</strong>
+                    <span>{{ auditoria.usuarioRol }} / {{ auditoria.ipOrigen }}</span>
+                  </td>
+                  <td>{{ auditoria.modulo }}</td>
+                  <td>{{ auditoria.accion }}</td>
+                  <td>{{ auditoria.descripcion }}</td>
+                  <td><span [class]="claseResultado(auditoria.resultado)">{{ auditoria.resultado }}</span></td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="empty" colspan="6">No hay auditorias para los filtros seleccionados.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <span>Eventos de acceso</span>
+          <strong>{{ accesosObservados().length }} observados</strong>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Identificador</th>
+                <th>Tipo</th>
+                <th>Ruta</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (evento of eventosAcceso(); track evento.id) {
+                <tr>
+                  <td>{{ formatearFecha(evento.fechaEvento) }}</td>
+                  <td>
+                    <strong>{{ evento.identificador }}</strong>
+                    <span>{{ evento.ipOrigen }}</span>
+                  </td>
+                  <td>{{ evento.tipo }}</td>
+                  <td>{{ evento.rutaSolicitada || 'N/A' }}</td>
+                  <td><span [class]="claseAcceso(evento)">{{ evento.exitoso ? 'EXITOSO' : 'OBSERVADO' }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  }
+</section>

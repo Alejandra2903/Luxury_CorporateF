@@ -1,0 +1,78 @@
+:root,
+.theme-light,
+[data-theme='light'] {
+  --color-bg: #f3f2ee;
+  --color-surface: #ffffff;
+  --color-surface-raised: #fbfaf7;
+  --color-surface-hover: #f2f1ee;
+  --color-text: #10110f;
+  --color-muted: #62635f;
+  --color-subtle: #92938c;
+  --color-border: #e4e1dc;
+  --color-border-strong: #d2cec6;
+  --color-primary: #f06423;
+  --color-primary-hover: #d84f12;
+  --color-primary-soft: rgba(240, 100, 35, 0.12);
+
+  --bg: var(--color-bg);
+  --bg-elevated: var(--color-surface-raised);
+  --surface: var(--color-surface);
+  --surface-hover: var(--color-surface-hover);
+  --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-muted);
+  --text-tertiary: var(--color-subtle);
+  --text-on-accent: #ffffff;
+  --accent: var(--color-primary);
+  --accent-hover: var(--color-primary-hover);
+  --accent-muted: var(--color-primary-soft);
+
+  --success: #21a33a;
+  --success-muted: rgba(33, 163, 58, 0.11);
+  --warning: #d88912;
+  --warning-muted: rgba(216, 137, 18, 0.14);
+  --danger: #d9483b;
+  --danger-muted: rgba(217, 72, 59, 0.12);
+
+  color-scheme: light;
+}
+
+.theme-dark,
+[data-theme='dark'] {
+  --color-bg: #111111;
+  --color-surface: #1a1a1a;
+  --color-surface-raised: #202020;
+  --color-surface-hover: #252525;
+  --color-text: #f5f5f5;
+  --color-muted: #b7b7b2;
+  --color-subtle: #8d8d88;
+  --color-border: #2d2d2a;
+  --color-border-strong: #41413c;
+  --color-primary: #ff6a2a;
+  --color-primary-hover: #ff7c45;
+  --color-primary-soft: rgba(255, 106, 42, 0.14);
+
+  --bg: var(--color-bg);
+  --bg-elevated: var(--color-surface-raised);
+  --surface: var(--color-surface);
+  --surface-hover: var(--color-surface-hover);
+  --border: var(--color-border);
+  --border-strong: var(--color-border-strong);
+  --text-primary: var(--color-text);
+  --text-secondary: var(--color-muted);
+  --text-tertiary: var(--color-subtle);
+  --text-on-accent: #ffffff;
+  --accent: var(--color-primary);
+  --accent-hover: var(--color-primary-hover);
+  --accent-muted: var(--color-primary-soft);
+
+  --success: #55d66f;
+  --success-muted: rgba(85, 214, 111, 0.15);
+  --warning: #ffbd4d;
+  --warning-muted: rgba(255, 189, 77, 0.15);
+  --danger: #ff7468;
+  --danger-muted: rgba(255, 116, 104, 0.15);
+
+  color-scheme: dark;
+}

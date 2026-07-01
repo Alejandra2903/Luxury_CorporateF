@@ -1,0 +1,78 @@
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  min-width: 48rem;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  color: var(--text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+td {
+  color: var(--text-secondary);
+}
+
+td strong,
+td span {
+  display: block;
+}
+
+td strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+td span:not(.status) {
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.status {
+  width: fit-content;
+  padding: 0.28rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.status--validado {
+  color: var(--success);
+  background: var(--success-muted);
+}
+
+.status--registrado {
+  color: var(--accent);
+  background: var(--accent-muted);
+}
+
+.status--observado {
+  color: var(--warning);
+  background: var(--warning-muted);
+}
+
+.empty {
+  color: var(--text-tertiary);
+  text-align: center;
+}

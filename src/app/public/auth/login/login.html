@@ -1,0 +1,77 @@
+<div class="login">
+  <div class="login__card">
+    <div class="login__intro">
+      <div class="login__mark">
+        <span class="login__mark-dot"></span>
+        <span class="login__mark-text">Luxury</span>
+      </div>
+
+      <header class="login__header">
+        <h1>Inicia sesion</h1>
+        <p>Smart Corporate Resource &amp; Financial Optimizer</p>
+      </header>
+    </div>
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+      <div class="login-form__field">
+        <label for="identificador">Correo o documento</label>
+        <input
+          id="identificador"
+          type="text"
+          formControlName="identificador"
+          autocomplete="username"
+          placeholder="nombre@luxury.pe"
+          [class.is-invalid]="identificador.invalid && identificador.touched"
+        />
+        @if (identificador.invalid && identificador.touched) {
+          <span class="login-form__hint">Este campo es obligatorio</span>
+        }
+      </div>
+
+      <div class="login-form__field">
+        <label for="contrasena">Contrasena</label>
+        <input
+          id="contrasena"
+          type="password"
+          formControlName="contrasena"
+          autocomplete="current-password"
+          placeholder="********"
+          [class.is-invalid]="contrasena.invalid && contrasena.touched"
+        />
+        @if (contrasena.invalid && contrasena.touched) {
+          <span class="login-form__hint">Este campo es obligatorio</span>
+        }
+      </div>
+
+      @if (errorAutenticacion()) {
+        <p class="login-form__error" role="alert">{{ errorAutenticacion() }}</p>
+      }
+
+      <button type="submit" class="login-form__submit" [disabled]="cargando()">
+        @if (cargando()) {
+          <span class="login-form__spinner" aria-hidden="true"></span>
+          <span>Ingresando</span>
+        } @else {
+          <span>Ingresar</span>
+        }
+      </button>
+    </form>
+
+    <p class="login__footer">
+      No tienes cuenta? <a routerLink="/registro">Registrate</a>
+    </p>
+  </div>
+
+  <button
+    type="button"
+    class="login__theme-toggle"
+    (click)="alternarTema()"
+    [attr.aria-label]="'Cambiar a tema ' + (temaActual() === 'dark' ? 'claro' : 'oscuro')"
+  >
+    @if (temaActual() === 'dark') {
+      <span aria-hidden="true">&#9728;</span>
+    } @else {
+      <span aria-hidden="true">&#9790;</span>
+    }
+  </button>
+</div>

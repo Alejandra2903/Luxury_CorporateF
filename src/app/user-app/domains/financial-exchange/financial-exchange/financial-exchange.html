@@ -1,0 +1,183 @@
+<section class="exchange-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finanzas</p>
+      <h1>Cambio financiero</h1>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando informacion financiera...</div>
+  } @else {
+    @if (mensaje()) {
+      <div class="message">{{ mensaje() }}</div>
+    }
+
+    <div class="stat-grid">
+      <article class="stat">
+        <span>Monedas activas</span>
+        <strong>{{ monedasActivas().length }}</strong>
+        <small>{{ monedas().length }} registradas</small>
+      </article>
+      <article class="stat">
+        <span>Tipos vigentes</span>
+        <strong>{{ tiposCambioActivos().length }}</strong>
+        <small>Listos para conversion</small>
+      </article>
+      <article class="stat">
+        <span>Tasa promedio</span>
+        <strong>{{ formatearTasa(tasaPromedioActiva()) }}</strong>
+        <small>Sobre tipos activos</small>
+      </article>
+    </div>
+
+    <div class="forms-grid">
+      <form class="panel form-panel" [formGroup]="monedaForm" (ngSubmit)="crearMoneda()">
+        <header>
+          <span>Nueva moneda</span>
+        </header>
+
+        <label>
+          <span>Codigo</span>
+          <input type="text" formControlName="codigo" placeholder="GBP" />
+          @if (monedaForm.controls.codigo.invalid && monedaForm.controls.codigo.touched) {
+            <small>Usa un codigo de 3 caracteres.</small>
+          }
+        </label>
+
+        <label>
+          <span>Nombre</span>
+          <input type="text" formControlName="nombre" placeholder="Libra esterlina" />
+        </label>
+
+        <label>
+          <span>Simbolo</span>
+          <input type="text" formControlName="simbolo" placeholder="GBP" />
+        </label>
+
+        <button type="submit" [disabled]="guardandoMoneda()">
+          {{ guardandoMoneda() ? 'Guardando' : 'Crear moneda' }}
+        </button>
+      </form>
+
+      <form class="panel form-panel" [formGroup]="tipoCambioForm" (ngSubmit)="guardarTipoCambio()">
+        <header>
+          <span>{{ tipoCambioEditando() ? 'Editar tipo' : 'Nuevo tipo' }}</span>
+        </header>
+
+        <div class="inline-fields">
+          <label>
+            <span>Origen</span>
+            <select formControlName="monedaOrigenId">
+              @for (moneda of monedasActivas(); track moneda.id) {
+                <option [ngValue]="moneda.id">{{ moneda.codigo }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Destino</span>
+            <select formControlName="monedaDestinoId">
+              @for (moneda of monedasActivas(); track moneda.id) {
+                <option [ngValue]="moneda.id">{{ moneda.codigo }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <div class="inline-fields">
+          <label>
+            <span>Tasa</span>
+            <input type="number" step="0.0001" formControlName="tasa" />
+          </label>
+
+          <label>
+            <span>Vigencia</span>
+            <input type="date" formControlName="fechaVigencia" />
+          </label>
+        </div>
+
+        <label>
+          <span>Fuente</span>
+          <input type="text" formControlName="fuente" />
+        </label>
+
+        <label class="check">
+          <input type="checkbox" formControlName="activo" />
+          <span>Tipo de cambio activo</span>
+        </label>
+
+        <div class="actions">
+          <button type="submit" [disabled]="guardandoCambio()">
+            {{ guardandoCambio() ? 'Guardando' : (tipoCambioEditando() ? 'Actualizar tipo' : 'Crear tipo') }}
+          </button>
+          @if (tipoCambioEditando()) {
+            <button type="button" class="ghost" (click)="cancelarEdicion()">Cancelar</button>
+          }
+        </div>
+      </form>
+    </div>
+
+    <div class="tables-grid">
+      <section class="panel">
+        <header>
+          <span>Monedas</span>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Codigo</th>
+                <th>Nombre</th>
+                <th>Simbolo</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (moneda of monedas(); track moneda.id) {
+                <tr>
+                  <td><strong>{{ moneda.codigo }}</strong></td>
+                  <td>{{ moneda.nombre }}</td>
+                  <td>{{ moneda.simbolo }}</td>
+                  <td><span class="status" [class.status--inactive]="!moneda.activa">{{ moneda.activa ? 'ACTIVA' : 'INACTIVA' }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header>
+          <span>Tipos de cambio</span>
+        </header>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Par</th>
+                <th>Tasa</th>
+                <th>Vigencia</th>
+                <th>Fuente</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tipo of tiposCambio(); track tipo.id) {
+                <tr>
+                  <td><strong>{{ tipo.monedaOrigenCodigo }}/{{ tipo.monedaDestinoCodigo }}</strong></td>
+                  <td>{{ formatearTasa(tipo.tasa) }}</td>
+                  <td>{{ tipo.fechaVigencia }}</td>
+                  <td>{{ tipo.fuente }}</td>
+                  <td><span class="status" [class.status--inactive]="!tipo.activo">{{ tipo.activo ? 'ACTIVO' : 'HISTORICO' }}</span></td>
+                  <td><button type="button" class="row-action" (click)="editarTipoCambio(tipo)">Editar</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  }
+</section>

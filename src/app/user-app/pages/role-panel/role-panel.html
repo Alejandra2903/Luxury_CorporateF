@@ -1,0 +1,42 @@
+<section class="role-panel-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Panel</p>
+      <h1>{{ rolPrincipal() }}</h1>
+    </div>
+  </header>
+
+  <section class="welcome-panel">
+    <div>
+      <span>Bienvenido</span>
+      <strong>{{ usuario()?.nombreCompleto }}</strong>
+    </div>
+    <p>Estas son las acciones disponibles para tu rol actual.</p>
+  </section>
+
+  <div class="panel-grid">
+    @for (card of cards(); track card.title) {
+      <article class="panel-card">
+        <span>{{ card.title }}</span>
+        <strong>{{ card.value }}</strong>
+        <small>{{ card.detail }}</small>
+      </article>
+    }
+  </div>
+
+  <section class="actions-panel">
+    <header>
+      <span>Acciones del rol</span>
+      <strong>{{ acciones().length }} disponibles</strong>
+    </header>
+
+    <div class="actions-grid">
+      @for (accion of acciones(); track accion.label) {
+        <a class="action-card" [routerLink]="accion.route">
+          <span>{{ accion.label }}</span>
+          <p>{{ accion.detail }}</p>
+        </a>
+      }
+    </div>
+  </section>
+</section>

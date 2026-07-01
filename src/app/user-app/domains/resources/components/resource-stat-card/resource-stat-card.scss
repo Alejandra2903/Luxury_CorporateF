@@ -1,0 +1,40 @@
+.stat {
+  min-height: 7.25rem;
+  display: grid;
+  align-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.stat span {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.stat strong {
+  color: var(--text-primary);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 600;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.stat small {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.stat--warning {
+  border-color: color-mix(in srgb, var(--warning) 40%, var(--border));
+  background: linear-gradient(180deg, var(--warning-muted), var(--surface));
+}
+
+.stat--danger {
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
+  background: linear-gradient(180deg, var(--danger-muted), var(--surface));
+}
