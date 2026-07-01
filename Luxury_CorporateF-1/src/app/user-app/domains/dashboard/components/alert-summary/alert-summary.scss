@@ -1,0 +1,86 @@
+.panel {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+header span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+h2 {
+  font-size: 1.15rem;
+}
+
+header > strong {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.alerts {
+  display: grid;
+  gap: 0.85rem;
+}
+
+article {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.severity {
+  width: fit-content;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.severity--critica {
+  background: var(--danger-muted);
+  color: var(--danger);
+}
+
+.severity--alta {
+  background: var(--warning-muted);
+  color: var(--warning);
+}
+
+.severity--media {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+article strong,
+article p {
+  display: block;
+}
+
+article strong {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+article p,
+.empty {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}

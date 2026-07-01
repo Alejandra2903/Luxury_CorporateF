@@ -1,0 +1,28 @@
+<section class="feature">
+  <div class="feature__header">
+    <div>
+      <p class="feature__eyebrow">{{ data.eyebrow }}</p>
+      <h1>{{ data.title }}</h1>
+    </div>
+    <span class="feature__status">{{ data.status }}</span>
+  </div>
+
+  <p class="feature__description">{{ data.description }}</p>
+
+  <div class="feature__grid" aria-label="Resumen de preparacion">
+    <article>
+      <span>Usuario</span>
+      <strong>{{ usuario?.nombreCompleto }}</strong>
+    </article>
+    <article>
+      <span>Rol activo</span>
+      <strong>{{ usuario?.roles }}</strong>
+    </article>
+    <article>
+      <span>Modo de datos</span>
+      <strong>Mock local</strong>
+    </article>
+  </div>
+
+  <a routerLink="/dashboard" class="feature__link">Volver al dashboard</a>
+</section>

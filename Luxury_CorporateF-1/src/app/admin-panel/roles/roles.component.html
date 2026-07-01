@@ -1,0 +1,18 @@
+<section class="admin-section">
+  <div class="admin-header">
+    <div class="title-area">
+      <p class="eyebrow">ADMINISTRACIÓN</p>
+      <h1>Roles del Sistema (RBAC)</h1>
+    </div>
+    <p class="header-description">
+      Vista detallada de los roles disponibles en el sistema Corporate Luxury y sus responsabilidades asociadas.
+    </p>
+  </div>
+
+  <div class="roles-grid">
+    <div class="role-card" *ngFor="let rol of rolesInfo">
+      <h2 class="role-title">{{ rol.nombre }}</h2>
+      <p class="role-description">{{ rol.descripcion }}</p>
+    </div>
+  </div>
+</section>

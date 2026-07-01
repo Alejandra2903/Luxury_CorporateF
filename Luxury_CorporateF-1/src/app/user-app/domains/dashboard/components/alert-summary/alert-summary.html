@@ -1,0 +1,23 @@
+<section class="panel">
+  <header>
+    <div>
+      <span>Alertas</span>
+      <h2>Riesgos recientes</h2>
+    </div>
+    <strong>{{ alertas.length }} activas</strong>
+  </header>
+
+  <div class="alerts">
+    @for (alerta of alertas; track alerta.id) {
+      <article>
+        <span [class]="claseSeveridad(alerta.severidad)">{{ alerta.severidad }}</span>
+        <div>
+          <strong>{{ alerta.sede }}</strong>
+          <p>{{ alerta.mensaje }}</p>
+        </div>
+      </article>
+    } @empty {
+      <p class="empty">No hay alertas activas.</p>
+    }
+  </div>
+</section>

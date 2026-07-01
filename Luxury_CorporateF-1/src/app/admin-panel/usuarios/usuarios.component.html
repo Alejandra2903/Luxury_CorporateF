@@ -1,0 +1,110 @@
+<section class="admin-section">
+  <div class="admin-header">
+    <div class="title-area">
+      <p class="eyebrow">ADMINISTRACIÓN</p>
+      <h1>Gestión de Usuarios</h1>
+    </div>
+    <button class="btn btn-primary" (click)="abrirModalNuevo()">+ Nuevo Usuario</button>
+  </div>
+
+  <div class="filters">
+    <input 
+      type="text" 
+      class="form-control filter-input" 
+      placeholder="Buscar por nombre o correo..." 
+      (input)="onFiltroTexto($event)"
+    >
+    <select class="form-control filter-select" (change)="onFiltroRol($event)">
+      <option value="">Todos los roles</option>
+      <option *ngFor="let rol of roles" [value]="rol">{{ rol }}</option>
+    </select>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombres</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th class="actions-header">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of usuariosFiltrados">
+          <td>{{ u.nombreCompleto }}</td>
+          <td>{{ u.correo }}</td>
+          <td><span class="badge badge-role">{{ u.roles }}</span></td>
+          <td>
+            <span class="badge" [ngClass]="u.activo ? 'badge-success' : 'badge-danger'">
+              {{ u.activo ? 'ACTIVO' : 'INACTIVO' }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn btn-sm btn-outline" (click)="abrirModalEditar(u)">Editar</button>
+            <button class="btn btn-sm" 
+                    [ngClass]="u.activo ? 'btn-danger' : 'btn-success'"
+                    (click)="toggleEstado(u)">
+              {{ u.activo ? 'Desactivar' : 'Activar' }}
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="usuariosFiltrados.length === 0">
+          <td colspan="5" class="text-center empty-state">No se encontraron usuarios.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Modal de Formulario -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ modoEdicion ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h2>
+      <button class="btn-close" (click)="cerrarModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <form [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
+        <div class="form-group">
+          <label for="nombres">Nombres</label>
+          <input type="text" id="nombres" class="form-control" formControlName="nombres"
+            [class.is-invalid]="usuarioForm.get('nombres')?.invalid && usuarioForm.get('nombres')?.touched">
+        </div>
+        
+        <div class="form-group">
+          <label for="apellidos">Apellidos</label>
+          <input type="text" id="apellidos" class="form-control" formControlName="apellidos"
+            [class.is-invalid]="usuarioForm.get('apellidos')?.invalid && usuarioForm.get('apellidos')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" id="correo" class="form-control" formControlName="correo"
+            [class.is-invalid]="usuarioForm.get('correo')?.invalid && usuarioForm.get('correo')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label for="contrasena">Contraseña <span *ngIf="modoEdicion" class="text-muted">(opcional)</span></label>
+          <input type="password" id="contrasena" class="form-control" formControlName="contrasena"
+            [class.is-invalid]="usuarioForm.get('contrasena')?.invalid && usuarioForm.get('contrasena')?.touched">
+        </div>
+
+        <div class="form-group">
+          <label for="rol">Rol del Sistema</label>
+          <select id="rol" class="form-control" formControlName="rol"
+            [class.is-invalid]="usuarioForm.get('rol')?.invalid && usuarioForm.get('rol')?.touched">
+            <option *ngFor="let rol of roles" [value]="rol">{{ rol }}</option>
+          </select>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary" [disabled]="usuarioForm.invalid">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

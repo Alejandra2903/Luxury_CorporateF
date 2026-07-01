@@ -1,0 +1,236 @@
+<section class="reports-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Reportes</p>
+      <h1>Reportes ejecutivos</h1>
+      <p>Consolidado mensual de costos, consumo y cumplimiento preparado para consulta y exportacion.</p>
+    </div>
+
+    <button
+      type="button"
+      class="download-button"
+      [disabled]="cargando() || descargando() || !reporteMensual()"
+      (click)="descargarPdf()"
+    >
+      {{ descargando() ? 'Preparando PDF...' : 'Descargar PDF' }}
+    </button>
+  </header>
+
+  <form class="filters" [formGroup]="filtrosForm" (ngSubmit)="cargarReporte()">
+    <label>
+      <span>Periodo mensual</span>
+      <select formControlName="periodo">
+        @for (periodo of periodos; track periodo.value) {
+          <option [value]="periodo.value">{{ periodo.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      <span>Sede para detalle acumulado</span>
+      <select formControlName="sedeId">
+        <option [ngValue]="0">Todas las sedes</option>
+        @for (sede of sedes(); track sede.id) {
+          <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Consultando...' : 'Generar reporte' }}
+      </button>
+      @if (reporteSede()) {
+        <button type="button" class="ghost-button" (click)="limpiarSede()">Quitar detalle</button>
+      }
+    </div>
+  </form>
+
+  @if (error()) {
+    <div class="state state--error" role="alert">
+      <strong>No pudimos completar la consulta</strong>
+      <span>{{ error() }}</span>
+    </div>
+  } @else if (cargando()) {
+    <div class="loading-grid" aria-label="Cargando reporte">
+      @for (item of [1, 2, 3, 4]; track item) {
+        <div class="skeleton"></div>
+      }
+    </div>
+  } @else {
+    @if (reporteMensual(); as reporte) {
+    <div class="summary-grid">
+      <article class="metric metric--primary">
+        <span>Costo consolidado</span>
+        <strong>{{ formatearMoneda(reporte.costoTotal) }}</strong>
+        <small [class]="claseVariacion(reporte.variacionCostoPorcentaje)">
+          {{ reporte.variacionCostoPorcentaje > 0 ? '+' : '' }}{{ formatearDecimal(reporte.variacionCostoPorcentaje) }}% vs. periodo anterior
+        </small>
+      </article>
+      <article class="metric">
+        <span>Sedes evaluadas</span>
+        <strong>{{ reporte.sedesEvaluadas }}</strong>
+        <small>Cobertura del reporte mensual</small>
+      </article>
+      <article class="metric">
+        <span>Cumplimiento</span>
+        <strong>{{ formatearDecimal(reporte.cumplimientoPromedioPorcentaje) }}%</strong>
+        <small>Promedio de umbrales por sede</small>
+      </article>
+      <article class="metric metric--alert">
+        <span>Alertas detectadas</span>
+        <strong>{{ reporte.alertasDetectadas }}</strong>
+        <small>Requieren seguimiento operativo</small>
+      </article>
+    </div>
+
+    @if (reporteSede(); as sede) {
+      <section class="site-focus" aria-labelledby="site-report-title">
+        <div class="site-focus__identity">
+          <span>{{ sede.codigoSede }} / {{ sede.ciudad }}</span>
+          <h2 id="site-report-title">{{ sede.sedeNombre }}</h2>
+          <p>Responsable: {{ sede.responsable }}</p>
+        </div>
+        <dl>
+          <div>
+            <dt>Costo acumulado</dt>
+            <dd>{{ formatearMoneda(sede.costoAcumulado) }}</dd>
+          </div>
+          <div>
+            <dt>Energia</dt>
+            <dd>{{ formatearNumero(sede.consumoEnergiaKwh) }} kWh</dd>
+          </div>
+          <div>
+            <dt>Agua</dt>
+            <dd>{{ formatearNumero(sede.consumoAguaM3) }} m3</dd>
+          </div>
+          <div>
+            <dt>Cumplimiento</dt>
+            <dd>{{ formatearDecimal(sede.cumplimientoPromedioPorcentaje) }}%</dd>
+          </div>
+        </dl>
+      </section>
+    }
+
+    <div class="report-grid">
+      <section class="panel resource-breakdown">
+        <header>
+          <div>
+            <span>Composicion del costo</span>
+            <h2>Recursos del periodo</h2>
+          </div>
+          <small>Generado {{ formatearFecha(reporte.fechaGeneracion) }}</small>
+        </header>
+
+        <div class="resource-list">
+          @for (recurso of reporte.recursos; track recurso.codigo) {
+            <article>
+              <div class="resource-list__heading">
+                <div>
+                  <span>{{ recurso.codigo }}</span>
+                  <strong>{{ recurso.nombre }}</strong>
+                </div>
+                <strong>{{ formatearMoneda(recurso.costo) }}</strong>
+              </div>
+              <div
+                class="participation"
+                role="progressbar"
+                [attr.aria-label]="'Participacion de ' + recurso.nombre"
+                [attr.aria-valuenow]="recurso.participacionPorcentaje"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <span [style.width.%]="recurso.participacionPorcentaje"></span>
+              </div>
+              <div class="resource-list__meta">
+                <span>{{ formatearNumero(recurso.consumo) }} {{ recurso.unidad }}</span>
+                <span>{{ formatearDecimal(recurso.participacionPorcentaje) }}% del costo</span>
+                <span [class]="claseVariacion(recurso.variacionPorcentaje)">
+                  {{ recurso.variacionPorcentaje > 0 ? '+' : '' }}{{ formatearDecimal(recurso.variacionPorcentaje) }}%
+                </span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="panel ranking">
+        <header>
+          <div>
+            <span>Distribucion mensual</span>
+            <h2>Costo por sede</h2>
+          </div>
+          <small>{{ reporte.sedes.length }} sedes</small>
+        </header>
+
+        <div class="ranking-list">
+          @for (sede of reporte.sedes; track sede.sedeId; let posicion = $index) {
+            <article>
+              <span class="rank">{{ posicion + 1 }}</span>
+              <div class="ranking-list__data">
+                <div>
+                  <strong>{{ sede.sedeNombre }}</strong>
+                  <span>{{ sede.ciudad }} / {{ sede.alertas }} alertas</span>
+                </div>
+                <strong>{{ formatearMoneda(sede.costoTotal) }}</strong>
+                <div class="cost-bar" aria-hidden="true">
+                  <span [style.width.%]="anchoCosto(sede.costoTotal)"></span>
+                </div>
+              </div>
+            </article>
+          } @empty {
+            <div class="empty-state">No hay sedes en el reporte seleccionado.</div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <section class="panel table-panel">
+      <header>
+        <div>
+          <span>Detalle operativo</span>
+          <h2>Indicadores por sede</h2>
+        </div>
+      </header>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sede</th>
+              <th>Energia</th>
+              <th>Agua</th>
+              <th>Costo</th>
+              <th>Alertas</th>
+              <th>Cumplimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sede of reporte.sedes; track sede.sedeId) {
+              <tr>
+                <td>
+                  <strong>{{ sede.sedeNombre }}</strong>
+                  <span>{{ sede.ciudad }}</span>
+                </td>
+                <td>{{ formatearNumero(sede.consumoEnergiaKwh) }} kWh</td>
+                <td>{{ formatearNumero(sede.consumoAguaM3) }} m3</td>
+                <td>{{ formatearMoneda(sede.costoTotal) }}</td>
+                <td>{{ sede.alertas }}</td>
+                <td>
+                  <span class="compliance" [class.compliance--warning]="sede.cumplimientoPorcentaje < 90">
+                    {{ formatearNumero(sede.cumplimientoPorcentaje) }}%
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    } @else {
+      <div class="state">
+        <strong>Sin informacion disponible</strong>
+        <span>Selecciona un periodo para generar el reporte.</span>
+      </div>
+    }
+  }
+</section>

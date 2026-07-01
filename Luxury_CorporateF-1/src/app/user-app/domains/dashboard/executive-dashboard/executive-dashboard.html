@@ -1,0 +1,62 @@
+<section class="dashboard">
+  <header class="dashboard__header">
+    <div>
+      <p class="eyebrow">Dashboard</p>
+      <h1>Centro ejecutivo</h1>
+      <p>
+        Resumen mock de consumo, costo y riesgo operativo preparado para los endpoints reales.
+      </p>
+    </div>
+
+    <app-currency-selector
+      [monedas]="monedas()"
+      [monedaSeleccionada]="monedaSeleccionada()"
+      (monedaSeleccionadaChange)="seleccionarMoneda($event)"
+    />
+  </header>
+
+  @if (cargando()) {
+    <div class="state state--loading">
+      <span></span>
+      <strong>Cargando dashboard mock</strong>
+    </div>
+  } @else if (error()) {
+    <div class="state state--error">
+      <strong>{{ error() }}</strong>
+    </div>
+  } @else {
+    @if (resumenConvertido(); as resumen) {
+      <div class="kpi-grid">
+        <app-kpi-card
+          label="Costo total"
+          [value]="formatearMonto(resumen.costoTotal)"
+          [detail]="formatearPorcentaje(resumen.variacionCostoPorcentaje) + ' vs mes anterior'"
+          [tone]="resumen.variacionCostoPorcentaje <= 0 ? 'success' : 'warning'"
+        />
+        <app-kpi-card
+          label="Energia"
+          [value]="formatearNumero(resumen.consumoEnergiaKwh) + ' kWh'"
+          detail="Consumo consolidado"
+        />
+        <app-kpi-card
+          label="Agua"
+          [value]="formatearNumero(resumen.consumoAguaM3) + ' m3'"
+          detail="Volumen mensual"
+        />
+        <app-kpi-card
+          label="Alertas"
+          [value]="formatearNumero(resumen.alertasActivas)"
+          [detail]="formatearPorcentaje(resumen.cumplimientoUmbralesPorcentaje) + ' cumplimiento'"
+          [tone]="resumen.alertasActivas > 5 ? 'warning' : 'success'"
+        />
+      </div>
+
+      <div class="dashboard-grid">
+        <app-cost-summary [costos]="costosConvertidos()" [moneda]="monedaActual()" />
+        <app-alert-summary [alertas]="alertas()" />
+      </div>
+
+      <app-resource-chart [sedes]="sedesConvertidas()" [moneda]="monedaActual()" />
+    }
+  }
+</section>

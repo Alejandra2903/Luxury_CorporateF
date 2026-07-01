@@ -1,0 +1,33 @@
+<section class="admin-section">
+  <div class="admin-header">
+    <div class="title-area">
+      <p class="eyebrow">ADMINISTRACIÓN</p>
+      <h1>Permisos</h1>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-simple">
+      <thead>
+        <tr>
+          <th class="module-col">Módulo</th>
+          <th *ngFor="let rol of roles" class="role-col">{{ rol }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let modulo of modulos">
+          <td class="module-col">
+            {{ modulo.modulo }}
+          </td>
+          <td *ngFor="let rol of roles" class="role-col">
+            <span class="perm-text" 
+                  [ngClass]="{'text-primary': getIconoPermiso(modulo.permisos[rol]) === 'Total', 
+                              'text-muted': getIconoPermiso(modulo.permisos[rol]) === '---'}">
+              {{ getIconoPermiso(modulo.permisos[rol]) }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

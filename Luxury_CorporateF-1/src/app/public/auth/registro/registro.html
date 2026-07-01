@@ -1,0 +1,130 @@
+<div class="login">
+  <div class="login__card">
+    <div class="login__intro">
+      <div class="login__mark">
+        <span class="login__mark-dot"></span>
+        <span class="login__mark-text">Luxury</span>
+      </div>
+
+      <header class="login__header">
+        <h1>Crear cuenta</h1>
+        <p>Completa tus datos para acceder al panel corporativo.</p>
+      </header>
+    </div>
+    @if (exitoso) {
+      <p class="login-form__error login-form__error--success">
+        Cuenta creada exitosamente. Redirigiendo...
+      </p>
+    } @else {
+      <form class="login-form" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+        <div class="login-form__field">
+          <label for="nombres">Nombres</label>
+          <input
+            id="nombres"
+            type="text"
+            formControlName="nombres"
+            autocomplete="given-name"
+            placeholder="Katherine"
+            [class.is-invalid]="nombres?.invalid && nombres?.touched"
+          />
+          @if (nombres?.errors?.['required'] && nombres?.touched) {
+            <span class="login-form__hint">Este campo es obligatorio</span>
+          }
+          @if (nombres?.errors?.['minlength'] && nombres?.touched) {
+            <span class="login-form__hint">Minimo 3 caracteres</span>
+          }
+        </div>
+
+        <div class="login-form__field">
+          <label for="apellidos">Apellidos</label>
+          <input
+            id="apellidos"
+            type="text"
+            formControlName="apellidos"
+            autocomplete="family-name"
+            placeholder="Ramirez"
+            [class.is-invalid]="apellidos?.invalid && apellidos?.touched"
+          />
+          @if (apellidos?.errors?.['required'] && apellidos?.touched) {
+            <span class="login-form__hint">Este campo es obligatorio</span>
+          }
+          @if (apellidos?.errors?.['minlength'] && apellidos?.touched) {
+            <span class="login-form__hint">Minimo 3 caracteres</span>
+          }
+        </div>
+
+        <div class="login-form__field">
+          <label for="correo">Correo electronico</label>
+          <input
+            id="correo"
+            type="email"
+            formControlName="correo"
+            autocomplete="email"
+            placeholder="nombre@luxury.pe"
+            [class.is-invalid]="correo?.invalid && correo?.touched"
+          />
+          @if (correo?.errors?.['required'] && correo?.touched) {
+            <span class="login-form__hint">Este campo es obligatorio</span>
+          }
+          @if (correo?.errors?.['email'] && correo?.touched) {
+            <span class="login-form__hint">Ingresa un correo valido</span>
+          }
+        </div>
+
+        <div class="login-form__field">
+          <label for="contrasena">Contrasena</label>
+          <input
+            id="contrasena"
+            type="password"
+            formControlName="contrasena"
+            autocomplete="new-password"
+            placeholder="Minimo 6 caracteres"
+            [class.is-invalid]="contrasena?.invalid && contrasena?.touched"
+          />
+          @if (contrasena?.errors?.['required'] && contrasena?.touched) {
+            <span class="login-form__hint">Este campo es obligatorio</span>
+          }
+          @if (contrasena?.errors?.['minlength'] && contrasena?.touched) {
+            <span class="login-form__hint">Minimo 6 caracteres</span>
+          }
+        </div>
+
+        <div class="login-form__field">
+          <label for="numeroDocumento">Numero de DNI</label>
+          <input
+            id="numeroDocumento"
+            type="text"
+            formControlName="numeroDocumento"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="12345678"
+            [class.is-invalid]="numeroDocumento?.invalid && numeroDocumento?.touched"
+          />
+          @if (numeroDocumento?.errors?.['required'] && numeroDocumento?.touched) {
+            <span class="login-form__hint">Este campo es obligatorio</span>
+          }
+          @if (numeroDocumento?.errors?.['pattern'] && numeroDocumento?.touched) {
+            <span class="login-form__hint">Debe tener exactamente 8 digitos</span>
+          }
+        </div>
+
+        @if (errorRegistro) {
+          <p class="login-form__error" role="alert">{{ errorRegistro }}</p>
+        }
+
+        <button type="submit" class="login-form__submit" [disabled]="cargando">
+          @if (cargando) {
+            <span class="login-form__spinner" aria-hidden="true"></span>
+            <span>Registrando...</span>
+          } @else {
+            <span>Crear cuenta</span>
+          }
+        </button>
+      </form>
+    }
+
+    <p class="login__footer">
+      Ya tienes cuenta? <a routerLink="/login">Inicia sesion</a>
+    </p>
+  </div>
+</div>

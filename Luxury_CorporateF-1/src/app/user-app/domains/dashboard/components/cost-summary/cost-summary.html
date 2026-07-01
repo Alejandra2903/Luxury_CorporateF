@@ -1,0 +1,21 @@
+<section class="panel">
+  <header>
+    <div>
+      <span>Costos por mes</span>
+      <h2>Tendencia financiera</h2>
+    </div>
+    <strong>{{ costos.length }} periodos</strong>
+  </header>
+
+  <div class="bars">
+    @for (item of costos; track item.periodo) {
+      <div class="bar-row">
+        <span>{{ item.etiqueta }}</span>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="anchoBarra(item.costoTotal)"></div>
+        </div>
+        <strong>{{ formatearMonto(item.costoTotal) }}</strong>
+      </div>
+    }
+  </div>
+</section>

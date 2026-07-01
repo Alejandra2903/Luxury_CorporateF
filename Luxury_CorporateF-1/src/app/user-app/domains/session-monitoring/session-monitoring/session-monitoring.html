@@ -1,0 +1,104 @@
+<section class="session-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Sesiones</p>
+      <h1>Monitoreo de sesiones</h1>
+      <p>Eventos mock de foco, viewport, inactividad y acciones sensibles preparados para la API real.</p>
+    </div>
+    <div class="session-chip">
+      <span>Sesion actual</span>
+      <strong>{{ sesionActualId }}</strong>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="state">Cargando eventos de session monitoring...</div>
+  } @else {
+    @if (resumen(); as data) {
+      <div class="stat-grid">
+        <article class="stat">
+          <span>Eventos</span>
+          <strong>{{ data.totalEventos }}</strong>
+          <small>GET /api/session-monitoring/eventos</small>
+        </article>
+        <article class="stat stat--critical">
+          <span>Criticos</span>
+          <strong>{{ data.eventosCriticos }}</strong>
+          <small>Alta severidad o financiera</small>
+        </article>
+        <article class="stat">
+          <span>Usuarios</span>
+          <strong>{{ data.usuariosObservados }}</strong>
+          <small>Con actividad observada</small>
+        </article>
+        <article class="stat">
+          <span>Sesiones</span>
+          <strong>{{ data.sesionesObservadas }}</strong>
+          <small>Incluye sesiones mock/locales</small>
+        </article>
+      </div>
+    }
+
+    <form class="panel filters" [formGroup]="filtroForm" (ngSubmit)="aplicarFiltros()">
+      <label>
+        <span>Usuario</span>
+        <select formControlName="usuarioId">
+          <option [ngValue]="0">Todos los usuarios</option>
+          @for (usuario of usuariosObservados(); track usuario.id) {
+            <option [ngValue]="usuario.id">{{ usuario.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Tipo</span>
+        <select formControlName="tipo">
+          <option value="TODOS">Todos los tipos</option>
+          @for (tipo of tipos; track tipo) {
+            <option [value]="tipo">{{ tipo }}</option>
+          }
+        </select>
+      </label>
+
+      <label>
+        <span>Sesion</span>
+        <input type="text" formControlName="sesionId" placeholder="sess-admin-..." />
+      </label>
+
+      <div class="actions">
+        <button type="submit">Aplicar filtros</button>
+        <button type="button" class="ghost" (click)="limpiarFiltros()">Limpiar</button>
+      </div>
+    </form>
+
+    <section class="panel">
+      <header>
+        <span>Eventos detectados</span>
+        <strong>{{ eventosFiltrados().length }} registros</strong>
+      </header>
+
+      <div class="event-list">
+        @for (evento of eventosFiltrados(); track evento.id) {
+          <article class="event-row">
+            <div class="event-row__marker" [attr.data-severity]="evento.severidad"></div>
+            <div class="event-row__main">
+              <div class="event-row__title">
+                <strong>{{ evento.tipo }}</strong>
+                <span [class]="claseSeveridad(evento.severidad)">{{ evento.severidad }}</span>
+              </div>
+              <p>{{ evento.descripcion }}</p>
+              <div class="event-row__meta">
+                <span>{{ evento.usuarioNombre }} / {{ evento.usuarioRol }}</span>
+                <span>{{ evento.ruta }}</span>
+                <span>{{ evento.sesionId }}</span>
+              </div>
+            </div>
+            <time>{{ formatearFecha(evento.fechaEvento) }}</time>
+          </article>
+        } @empty {
+          <div class="empty">No hay eventos para los filtros seleccionados.</div>
+        }
+      </div>
+    </section>
+  }
+</section>

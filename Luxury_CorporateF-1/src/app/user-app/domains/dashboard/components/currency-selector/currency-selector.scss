@@ -1,0 +1,33 @@
+.currency {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.currency span {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+select {
+  min-height: 2.35rem;
+  min-width: 12rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .currency {
+    align-items: stretch;
+    display: grid;
+  }
+
+  select {
+    width: 100%;
+  }
+}

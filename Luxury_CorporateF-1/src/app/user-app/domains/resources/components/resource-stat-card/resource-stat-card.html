@@ -1,0 +1,13 @@
+<article
+  class="stat"
+  [class.stat--warning]="tone === 'warning'"
+  [class.stat--danger]="tone === 'danger'"
+  (click)="onClick()"
+  style="cursor: pointer;"
+>
+  <span>{{ label }}</span>
+  <strong>{{ value }}</strong>
+  @if (detail) {
+    <small>{{ detail }}</small>
+  }
+</article>

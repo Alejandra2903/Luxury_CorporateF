@@ -1,0 +1,6 @@
+@if (notificacion()) {
+  <div class="toast toast--{{ notificacion()!.tipo }}" role="alert">
+    <span>{{ notificacion()!.mensaje }}</span>
+    <button type="button" class="toast__close" (click)="cerrar()">✕</button>
+  </div>
+}

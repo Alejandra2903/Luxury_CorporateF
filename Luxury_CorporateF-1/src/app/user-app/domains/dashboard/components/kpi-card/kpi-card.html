@@ -1,0 +1,12 @@
+<article
+  class="kpi"
+  [class.kpi--success]="tone === 'success'"
+  [class.kpi--warning]="tone === 'warning'"
+  [class.kpi--danger]="tone === 'danger'"
+>
+  <span>{{ label }}</span>
+  <strong>{{ value }}</strong>
+  @if (detail) {
+    <small>{{ detail }}</small>
+  }
+</article>

@@ -1,0 +1,17 @@
+<nav class="navigation" [class.navigation--expanded]="expanded" aria-label="Navegacion principal">
+  <div class="navigation__links">
+    @for (item of items(); track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: item.route === '/dashboard' || item.route === '/resources' }"
+        [attr.aria-label]="item.label"
+        [title]="item.label"
+        (click)="onMenuItemClick()"
+      >
+        <span class="navigation__short">{{ item.shortLabel }}</span>
+        <span class="navigation__label">{{ item.label }}</span>
+      </a>
+    }
+  </div>
+</nav>

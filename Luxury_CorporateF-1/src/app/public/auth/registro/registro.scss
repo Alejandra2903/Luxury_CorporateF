@@ -1,0 +1,224 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.login {
+  min-height: 100vh;
+  @include m.flex-center;
+  position: relative;
+  padding: v.$space-4;
+  background:
+    radial-gradient(circle at top left, rgba(205, 164, 94, 0.16), transparent 32rem),
+    var(--bg);
+}
+
+.login__card {
+  width: min(100%, 32rem);
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-6;
+  padding: v.$space-8;
+  border: 1px solid var(--border);
+  border-radius: v.$radius-md;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+}
+
+.login__intro {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+}
+
+.login__mark {
+  display: flex;
+  align-items: center;
+  gap: v.$space-2;
+}
+
+.login__mark-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.login__mark-text {
+  font-family: v.$font-mono;
+  font-size: v.$font-size-sm;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.login__header {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-2;
+
+  h1 {
+    margin: 0;
+    font-size: v.$font-size-xl;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: v.$font-size-sm;
+    color: var(--text-secondary);
+  }
+}
+
+.login-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: v.$space-4;
+}
+
+.login-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-2;
+
+  &:nth-child(3),
+  &:nth-child(4),
+  &:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: v.$font-size-xs;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  input {
+    width: 100%;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: v.$space-3;
+    border: 1px solid var(--border);
+    border-radius: v.$radius-sm;
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: v.$font-size-base;
+    @include m.transition(border-color, box-shadow, background);
+
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    &:hover {
+      border-color: var(--border-strong);
+    }
+
+    &:focus {
+      @include m.focus-ring;
+    }
+
+    &.is-invalid {
+      border-color: var(--danger);
+    }
+  }
+}
+
+.login-form__hint {
+  font-size: v.$font-size-xs;
+  color: var(--danger);
+}
+
+.login-form__error {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: v.$space-3;
+  border: 1px solid var(--danger);
+  border-radius: v.$radius-sm;
+  background: var(--danger-muted);
+  color: var(--danger);
+  font-size: v.$font-size-sm;
+}
+
+.login-form__error--success {
+  border-color: var(--success);
+  background: var(--success-muted);
+  color: var(--success);
+}
+
+.login-form__submit {
+  grid-column: 1 / -1;
+  @include m.flex-center;
+  gap: v.$space-2;
+  min-height: 44px;
+  padding: v.$space-3;
+  border: none;
+  border-radius: v.$radius-sm;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-weight: 500;
+  font-size: v.$font-size-base;
+  @include m.transition(background, transform);
+
+  &:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.login-form__spinner {
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid var(--text-on-accent);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: login-spin 0.6s linear infinite;
+}
+
+.login__footer {
+  margin: 0;
+  text-align: center;
+  font-size: v.$font-size-sm;
+  color: var(--text-secondary);
+
+  a {
+    color: var(--accent);
+    font-weight: 500;
+
+    &:hover {
+      color: var(--accent-hover);
+    }
+  }
+}
+
+@keyframes login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 560px) {
+  .login {
+    align-items: flex-start;
+    padding-block: v.$space-5;
+  }
+
+  .login__card {
+    padding: v.$space-6;
+  }
+
+  .login-form {
+    grid-template-columns: 1fr;
+  }
+
+  .login-form__field,
+  .login-form__submit,
+  .login-form__error {
+    grid-column: 1;
+  }
+}

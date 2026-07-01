@@ -1,0 +1,38 @@
+@use '../../../../styles/variables' as v;
+@use '../../../../styles/mixins' as m;
+
+.toast {
+  position: fixed;
+  bottom: v.$space-5;
+  right: v.$space-5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: v.$space-4;
+  padding: v.$space-3 v.$space-4;
+  border-radius: v.$radius-md;
+  font-size: v.$font-size-sm;
+  font-weight: 500;
+  z-index: 9999;
+  min-width: 240px;
+  max-width: 380px;
+  @include m.transition(opacity);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+  &--exito   { background: var(--success, #22c55e); color: #fff; }
+  &--error   { background: var(--danger);            color: #fff; }
+  &--advertencia { background: var(--warning, #f59e0b); color: #fff; }
+  &--info    { background: var(--accent);            color: var(--text-on-accent); }
+}
+
+.toast__close {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: v.$font-size-base;
+  opacity: 0.8;
+  padding: 0;
+  line-height: 1;
+
+  &:hover { opacity: 1; }
+}

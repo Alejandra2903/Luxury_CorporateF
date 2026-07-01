@@ -1,0 +1,4 @@
+{
+  "typescript.tsdk": "Luxury_CorporateF-1/node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}

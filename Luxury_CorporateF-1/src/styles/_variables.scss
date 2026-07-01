@@ -1,0 +1,46 @@
+// ============================================================
+// Design tokens — Luxury
+// Sistema basado en CSS custom properties (no solo SASS) para
+// soportar dark/light mode real en runtime via atributo
+// [data-theme] en <html>, sin recompilar estilos.
+// ============================================================
+
+// Tipografía
+$font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-mono: 'Geist Mono', 'SF Mono', ui-monospace, monospace;
+
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.8125rem;  // 13px
+$font-size-base: 0.875rem; // 14px — base deliberadamente compacta, producto no marca
+$font-size-md: 1rem;       // 16px
+$font-size-lg: 1.25rem;    // 20px
+$font-size-xl: 1.75rem;    // 28px
+$font-size-2xl: 2.25rem;   // 36px
+
+// Espaciado (escala de 4px)
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-3: 0.75rem;
+$space-4: 1rem;
+$space-5: 1.5rem;
+$space-6: 2rem;
+$space-8: 3rem;
+$space-10: 4rem;
+
+// Radios — pequeños y consistentes, no "pill" excesivo
+$radius-sm: 6px;
+$radius-md: 8px;
+$radius-lg: 12px;
+
+// Motion — curva spring-out (Vaul/Sonner), nunca ease-in-out plano
+$ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+$duration-fast: 120ms;
+$duration-base: 180ms;
+$duration-slow: 280ms;
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
