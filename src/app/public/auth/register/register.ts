@@ -1,5 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -23,16 +31,57 @@ export class Register {
   readonly error = signal('');
   readonly exito = signal('');
 
-  readonly form = this.fb.nonNullable.group({
-    nombres: ['', [Validators.required, Validators.minLength(2)]],
-    apellidos: ['', [Validators.required, Validators.minLength(2)]],
-    tipoDocumento: ['DNI' as 'DNI' | 'CE', [Validators.required]],
-    numeroDocumento: ['', [Validators.required, Validators.minLength(8)]],
-    telefono: ['', [Validators.required, Validators.minLength(7)]],
-    correo: ['', [Validators.required, Validators.email]],
-    contrasena: ['', [Validators.required, Validators.minLength(6)]],
-    confirmarContrasena: ['', [Validators.required]],
-  });
+  readonly form = this.fb.nonNullable.group(
+    {
+      nombres: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(50),
+          Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/),
+        ],
+      ],
+      apellidos: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.maxLength(50),
+          Validators.pattern(/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/),
+        ],
+      ],
+      tipoDocumento: ['DNI' as 'DNI' | 'CE', [Validators.required]],
+      numeroDocumento: ['', [Validators.required, this.documentoValidator()]],
+      telefono: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(7),
+          Validators.maxLength(15),
+          Validators.pattern(/^\d+$/),
+        ],
+      ],
+      correo: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+      contrasena: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.maxLength(50),
+          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/),
+        ],
+      ],
+      confirmarContrasena: ['', [Validators.required]],
+    },
+    { validators: this.contrasenasCoincidenValidator() },
+  );
+
+  constructor() {
+    this.form.controls.tipoDocumento.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.form.controls.numeroDocumento.updateValueAndValidity());
+  }
 
   alternarTema(): void {
     this.themeService.alternar();
@@ -75,6 +124,34 @@ export class Register {
   contrasenasCoinciden(): boolean {
     const form = this.form.getRawValue();
     return form.contrasena === form.confirmarContrasena;
+  }
+
+  private documentoValidator(): ValidatorFn {
+    return (control): ValidationErrors | null => {
+      const tipoDocumento = control.parent?.get('tipoDocumento')?.value;
+      const valor = control.value;
+      if (!valor || !tipoDocumento) {
+        return null;
+      }
+
+      if (tipoDocumento === 'DNI') {
+        return /^\d{8}$/.test(valor) ? null : { documentoInvalido: true };
+      }
+
+      return /^[A-Za-z0-9]+$/.test(valor) ? null : { documentoInvalido: true };
+    };
+  }
+
+  private contrasenasCoincidenValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const contrasena = control.get('contrasena')?.value;
+      const confirmarContrasena = control.get('confirmarContrasena')?.value;
+      if (!contrasena || !confirmarContrasena) {
+        return null;
+      }
+
+      return contrasena === confirmarContrasena ? null : { contrasenasNoCoinciden: true };
+    };
   }
 }
 

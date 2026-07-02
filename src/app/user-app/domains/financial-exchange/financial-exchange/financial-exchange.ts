@@ -1,6 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
 import { FinancialExchangeService } from '../../../../core/services/financial-exchange.service';
@@ -18,6 +24,8 @@ export class FinancialExchange {
   private readonly fb = inject(FormBuilder);
   private readonly exchangeService = inject(FinancialExchangeService);
   private readonly sessionMonitoringService = inject(SessionMonitoringService);
+  private readonly fechaVigenciaMinimaValor = this.fechaComoNumero(new Date(2000, 0, 1));
+  private readonly fechaVigenciaMaximaValor = this.fechaComoNumero(this.obtenerUltimoDiaAnioActual());
 
   readonly cargando = signal(true);
   readonly guardandoMoneda = signal(false);
@@ -26,6 +34,8 @@ export class FinancialExchange {
   readonly monedas = signal<Moneda[]>([]);
   readonly tiposCambio = signal<TipoCambio[]>([]);
   readonly tipoCambioEditando = signal<TipoCambio | null>(null);
+  readonly fechaVigenciaMinimaInput = '2000-01-01';
+  readonly fechaVigenciaMaximaInput = this.obtenerUltimoDiaAnioActualInput();
 
   readonly monedasActivas = computed(() => this.monedas().filter((moneda) => moneda.activa));
   readonly tiposCambioActivos = computed(() =>
@@ -41,16 +51,23 @@ export class FinancialExchange {
 
   readonly monedaForm = this.fb.nonNullable.group({
     codigo: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]],
-    nombre: ['', [Validators.required, Validators.minLength(3)]],
-    simbolo: ['', [Validators.required, Validators.maxLength(6)]],
+    nombre: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
+    simbolo: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(6)]],
   });
 
   readonly tipoCambioForm = this.fb.nonNullable.group({
     monedaOrigenId: [2, [Validators.required]],
     monedaDestinoId: [1, [Validators.required]],
-    tasa: [3.7, [Validators.required, Validators.min(0.0001)]],
-    fechaVigencia: ['2026-06-21', [Validators.required]],
-    fuente: ['SBS', [Validators.required]],
+    tasa: [3.7, [Validators.required, Validators.min(0.0001), Validators.max(999999)]],
+    fechaVigencia: [
+      '2026-06-21',
+      [
+        Validators.required,
+        this.fechaVigenciaMinimaValidator(),
+        this.fechaVigenciaMaximaValidator(),
+      ],
+    ],
+    fuente: ['SBS', [Validators.required, Validators.maxLength(50)]],
     activo: [true],
   });
 
@@ -166,5 +183,63 @@ export class FinancialExchange {
       minimumFractionDigits: 4,
       maximumFractionDigits: 4,
     });
+  }
+
+  private fechaVigenciaMinimaValidator(): ValidatorFn {
+    return (control) =>
+      this.validarFechaCon(control, Validators.min(this.fechaVigenciaMinimaValor));
+  }
+
+  private fechaVigenciaMaximaValidator(): ValidatorFn {
+    return (control) =>
+      this.validarFechaCon(control, Validators.max(this.fechaVigenciaMaximaValor));
+  }
+
+  private validarFechaCon(control: AbstractControl, validator: ValidatorFn) {
+    const valorFecha = this.normalizarFecha(control.value);
+    if (valorFecha === null) {
+      return null;
+    }
+
+    return validator({ value: valorFecha } as AbstractControl);
+  }
+
+  private normalizarFecha(valor: unknown): number | null {
+    if (typeof valor !== 'string') {
+      return null;
+    }
+
+    const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor);
+    if (!partes) {
+      return null;
+    }
+
+    const anio = Number(partes[1]);
+    const mes = Number(partes[2]);
+    const dia = Number(partes[3]);
+    const fecha = new Date(anio, mes - 1, dia);
+    if (
+      fecha.getFullYear() !== anio ||
+      fecha.getMonth() !== mes - 1 ||
+      fecha.getDate() !== dia
+    ) {
+      return null;
+    }
+
+    return this.fechaComoNumero(fecha);
+  }
+
+  private obtenerUltimoDiaAnioActual(): Date {
+    const hoy = new Date();
+    return new Date(hoy.getFullYear(), 11, 31);
+  }
+
+  private obtenerUltimoDiaAnioActualInput(): string {
+    const ultimoDia = this.obtenerUltimoDiaAnioActual();
+    return `${ultimoDia.getFullYear()}-12-31`;
+  }
+
+  private fechaComoNumero(fecha: Date): number {
+    return fecha.getFullYear() * 10000 + (fecha.getMonth() + 1) * 100 + fecha.getDate();
   }
 }
