@@ -40,17 +40,55 @@
 
         <label>
           <span>Periodo</span>
-          <input type="month" formControlName="periodo" />
+          <input
+            type="month"
+            [min]="periodoMinimoInput"
+            [max]="periodoMaximoInput"
+            formControlName="periodo"
+          />
+          @if (registroForm.controls.periodo.touched && registroForm.controls.periodo.hasError('required')) {
+            <small class="field-error">Este campo es obligatorio</small>
+          }
+          @if (registroForm.controls.periodo.touched && registroForm.controls.periodo.hasError('min')) {
+            <small class="field-error">La fecha mínima es enero 2020</small>
+          }
+          @if (registroForm.controls.periodo.touched && registroForm.controls.periodo.hasError('max')) {
+            <small class="field-error">No se permiten fechas futuras</small>
+          }
         </label>
 
         <label>
           <span>Cantidad</span>
-          <input type="number" min="1" formControlName="cantidad" />
+          <input type="number" min="1" max="999999" step="1" formControlName="cantidad" />
+          @if (registroForm.controls.cantidad.touched && registroForm.controls.cantidad.dirty && registroForm.controls.cantidad.hasError('required')) {
+            <small class="field-error">Este campo es obligatorio</small>
+          }
+          @if (registroForm.controls.cantidad.touched && registroForm.controls.cantidad.dirty && registroForm.controls.cantidad.hasError('pattern')) {
+            <small class="field-error">La cantidad debe ser un número entero</small>
+          }
+          @if (registroForm.controls.cantidad.touched && registroForm.controls.cantidad.dirty && registroForm.controls.cantidad.hasError('min')) {
+            <small class="field-error">La cantidad mínima es 1</small>
+          }
+          @if (registroForm.controls.cantidad.touched && registroForm.controls.cantidad.dirty && registroForm.controls.cantidad.hasError('max')) {
+            <small class="field-error">La cantidad máxima es 999,999</small>
+          }
         </label>
 
         <label>
           <span>Costo</span>
-          <input type="number" min="1" formControlName="costo" />
+          <input type="number" min="0.01" max="9999999.99" step="0.01" formControlName="costo" />
+          @if (registroForm.controls.costo.touched && registroForm.controls.costo.dirty && registroForm.controls.costo.hasError('required')) {
+            <small class="field-error">Este campo es obligatorio</small>
+          }
+          @if (registroForm.controls.costo.touched && registroForm.controls.costo.dirty && registroForm.controls.costo.hasError('pattern')) {
+            <small class="field-error">El costo permite máximo 2 decimales</small>
+          }
+          @if (registroForm.controls.costo.touched && registroForm.controls.costo.dirty && registroForm.controls.costo.hasError('min')) {
+            <small class="field-error">El costo debe ser mayor a 0</small>
+          }
+          @if (registroForm.controls.costo.touched && registroForm.controls.costo.dirty && registroForm.controls.costo.hasError('max')) {
+            <small class="field-error">El costo máximo es 9,999,999.99</small>
+          }
         </label>
 
         <label class="entry-form__wide">
@@ -58,7 +96,7 @@
           <input type="text" formControlName="observacion" placeholder="Opcional" />
         </label>
 
-        <button type="submit" [disabled]="guardando()">
+        <button type="submit" [disabled]="guardando() || registroForm.invalid">
           {{ guardando() ? 'Registrando...' : 'Registrar consumo' }}
         </button>
       </form>
