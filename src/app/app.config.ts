@@ -10,8 +10,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    // El orden importa: jwtInterceptor agrega el header Authorization primero;
-    // errorInterceptor luego intercepta la respuesta (o el error) de esa misma request.
+
+
     provideHttpClient(withInterceptors([jwtInterceptor, errorInterceptor])),
   ],
 };

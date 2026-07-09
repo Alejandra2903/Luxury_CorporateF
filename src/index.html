@@ -7,10 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <script>
-    // Aplica el tema antes del primer paint para evitar flash de
-    // tema incorrecto (FOUC). Debe ejecutarse sincrónicamente, antes
-    // de que Angular bootstrapee — por eso vive aquí y no en un
-    // servicio Angular, que solo correría después del primer render.
+
+
     (function () {
       try {
         var guardado = localStorage.getItem('luxury_theme');

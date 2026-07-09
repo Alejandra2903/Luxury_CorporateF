@@ -26,10 +26,10 @@ export class Login {
     this.themeService.alternar();
   }
 
-  /** Mensaje de error de autenticación (401) a mostrar bajo el formulario. */
+
   readonly errorAutenticacion = signal<string | null>(null);
 
-  /** Estado de carga mientras la petición de login está en curso. */
+
   readonly cargando = signal(false);
 
   readonly form = this.fb.nonNullable.group({
