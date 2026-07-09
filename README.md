@@ -87,8 +87,6 @@ El proyecto trabaja con datos locales/mock para poder probar la aplicacion sin b
 | --- | --- | --- |
 | ADMIN | admin@luxury.pe | admin123 |
 | GERENTE | gerente@luxury.pe | gerente123 |
-| AUDITOR | auditor@luxury.pe | auditor123 |
-| ANALISTA | analista@luxury.pe | analista123 |
 | OPERADOR | operador@luxury.pe | operador123 |
 
 ## Roles del sistema
@@ -99,19 +97,11 @@ Tiene acceso completo al sistema. Puede gestionar usuarios, roles, permisos, rec
 
 ### GERENTE
 
-Puede revisar indicadores, dashboard, recursos, cambio financiero, reglas de negocio y reportes.
-
-### AUDITOR
-
-Puede revisar dashboard, auditoria y reportes. Su enfoque es la revision de actividad y trazabilidad.
-
-### ANALISTA
-
-Puede consultar dashboard, recursos y reportes para analizar informacion operativa.
+Puede revisar indicadores, recursos, reglas de negocio, auditoria y reportes de su sede asignada.
 
 ### OPERADOR
 
-Puede consultar recursos y registrar consumos operativos desde transacciones.
+Puede consultar recursos y registrar consumos operativos desde transacciones de su sede asignada.
 
 ## Rutas principales
 
@@ -120,15 +110,15 @@ Puede consultar recursos y registrar consumos operativos desde transacciones.
 | `/login` | Inicio de sesion | Publico |
 | `/registro` | Registro de nuevo usuario | Publico |
 | `/panel` | Panel inicial segun rol | Todos los usuarios autenticados |
-| `/dashboard` | Indicadores generales | ADMIN, GERENTE, AUDITOR, ANALISTA |
-| `/resources` | Centro de recursos | ADMIN, GERENTE, ANALISTA, OPERADOR |
-| `/resources/energy` | Consumo de energia | ADMIN, GERENTE, ANALISTA, OPERADOR |
-| `/resources/water` | Consumo de agua | ADMIN, GERENTE, ANALISTA, OPERADOR |
-| `/resources/transactions` | Registro y consulta de transacciones | ADMIN, GERENTE, ANALISTA, OPERADOR |
-| `/financial-exchange` | Cambio financiero | ADMIN, GERENTE |
+| `/dashboard` | Indicadores generales | ADMIN, GERENTE, OPERADOR |
+| `/resources` | Centro de recursos | ADMIN, GERENTE, OPERADOR |
+| `/resources/energy` | Consumo de energia | ADMIN, GERENTE, OPERADOR |
+| `/resources/water` | Consumo de agua | ADMIN, GERENTE, OPERADOR |
+| `/resources/transactions` | Registro y consulta de transacciones | ADMIN, GERENTE, OPERADOR |
+| `/financial-exchange` | Cambio financiero | ADMIN |
 | `/business-rules` | Reglas, tarifas, umbrales y alertas | ADMIN, GERENTE |
-| `/audit` | Auditoria | ADMIN, AUDITOR |
-| `/reports` | Reportes ejecutivos | ADMIN, GERENTE, AUDITOR, ANALISTA |
+| `/audit` | Auditoria | ADMIN, GERENTE |
+| `/reports` | Reportes ejecutivos | ADMIN, GERENTE |
 | `/session-monitoring` | Monitoreo de sesiones | ADMIN |
 | `/admin/users` | Administracion de usuarios | ADMIN |
 | `/admin/roles` | Administracion de roles | ADMIN |

@@ -1,0 +1,22 @@
+@if (notificaciones().length > 0) {
+  <section class="toast-stack" aria-live="polite" aria-label="Alertas del sistema">
+    @for (notificacion of notificaciones(); track notificacion.id) {
+      <article
+        class="toast"
+        [class.toast--success]="notificacion.tipo === 'exito'"
+        [class.toast--error]="notificacion.tipo === 'error'"
+        [class.toast--warning]="notificacion.tipo === 'advertencia'"
+        [class.toast--info]="notificacion.tipo === 'info'"
+        [attr.role]="notificacion.tipo === 'error' ? 'alert' : 'status'"
+      >
+        <span class="toast__icon" aria-hidden="true">{{ icono(notificacion) }}</span>
+        <div class="toast__content">
+          <p>{{ notificacion.mensaje }}</p>
+        </div>
+        <button type="button" class="toast__close" (click)="cerrar(notificacion.id)" aria-label="Cerrar alerta">
+          ×
+        </button>
+      </article>
+    }
+  </section>
+}

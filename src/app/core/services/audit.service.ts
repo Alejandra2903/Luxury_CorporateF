@@ -9,16 +9,18 @@ import {
   EVENTOS_ACCESO_MOCK,
 } from '../mocks/audit.mock';
 import { AuditModulo, AuditResumen, Auditoria, EventoAcceso } from '../models/audit.model';
+import { AccessScopeService } from './access-scope.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuditService {
   private readonly http = inject(HttpClient);
+  private readonly accessScope = inject(AccessScopeService);
   private readonly apiBaseUrl = environment.apiBaseUrl;
   private readonly mockDelayMs = 450;
 
   obtenerAuditorias(): Observable<Auditoria[]> {
     if (environment.useMocks) {
-      return of(AUDITORIAS_MOCK).pipe(delay(this.mockDelayMs));
+      return of(this.filtrarAuditoriasPorAlcance(AUDITORIAS_MOCK)).pipe(delay(this.mockDelayMs));
     }
     return this.http.get<Auditoria[]>(`${this.apiBaseUrl}/auditorias`);
   }
@@ -43,7 +45,7 @@ export class AuditService {
 
   obtenerEventosAcceso(): Observable<EventoAcceso[]> {
     if (environment.useMocks) {
-      return of(EVENTOS_ACCESO_MOCK).pipe(delay(this.mockDelayMs));
+      return of(this.filtrarAccesosPorAlcance(EVENTOS_ACCESO_MOCK)).pipe(delay(this.mockDelayMs));
     }
     return this.http.get<EventoAcceso[]>(`${this.apiBaseUrl}/eventos-acceso`);
   }
@@ -65,5 +67,23 @@ export class AuditService {
         modulosAuditados: new Set(auditorias.map((auditoria) => auditoria.modulo)).size,
       })),
     );
+  }
+
+  private filtrarAuditoriasPorAlcance(auditorias: Auditoria[]): Auditoria[] {
+    if (this.accessScope.esAdmin()) {
+      return auditorias;
+    }
+
+    const sedeId = this.accessScope.obtenerSedeId();
+    return auditorias.filter((auditoria) => auditoria.sedeId === sedeId);
+  }
+
+  private filtrarAccesosPorAlcance(accesos: EventoAcceso[]): EventoAcceso[] {
+    if (this.accessScope.esAdmin()) {
+      return accesos;
+    }
+
+    const sedeId = this.accessScope.obtenerSedeId();
+    return accesos.filter((acceso) => acceso.sedeId === sedeId);
   }
 }

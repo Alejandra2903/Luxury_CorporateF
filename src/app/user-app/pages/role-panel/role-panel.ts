@@ -16,56 +16,62 @@ interface RoleAction {
   route: string;
 }
 
+interface RolePanelCopy {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+}
+
+const PANEL_COPY: Record<NombreRol, RolePanelCopy> = {
+  ADMIN: {
+    eyebrow: 'Centro de control',
+    title: 'Panel administrativo',
+    subtitle: 'Supervision global de usuarios, sesiones y alertas del sistema.',
+  },
+  GERENTE: {
+    eyebrow: 'Gestion operativa',
+    title: 'Panel gerencial',
+    subtitle: 'Seguimiento financiero y operativo de la sede asignada.',
+  },
+  OPERADOR: {
+    eyebrow: 'Trabajo operativo',
+    title: 'Panel operativo',
+    subtitle: 'Registro y consulta diaria de consumos de la sede asignada.',
+  },
+};
+
 const PANEL_CARDS: Record<NombreRol, RolePanelCard[]> = {
   ADMIN: [
-    { title: 'Usuarios activos', value: '5', detail: 'Gestion y control de accesos' },
-    { title: 'Roles configurados', value: '5', detail: 'Permisos principales del sistema' },
-    { title: 'Alertas pendientes', value: '6', detail: 'Seguimiento general' },
+    { title: 'Usuarios activos', value: '3', detail: 'Cuentas habilitadas' },
+    { title: 'Sesiones observadas', value: '4', detail: 'Eventos monitoreados' },
+    { title: 'Alertas pendientes', value: '6', detail: 'Requieren seguimiento' },
   ],
   GERENTE: [
-    { title: 'Costo mensual', value: 'S/ 184,760', detail: 'Control financiero consolidado' },
-    { title: 'Cumplimiento', value: '91.4%', detail: 'Promedio de sedes' },
+    { title: 'Costo mensual', value: 'S/ 38,860', detail: 'Sede asignada' },
+    { title: 'Cumplimiento', value: '89%', detail: 'Umbrales del periodo' },
     { title: 'Reportes', value: '3', detail: 'Periodos disponibles' },
   ],
-  AUDITOR: [
-    { title: 'Auditorias', value: '8', detail: 'Acciones internas revisables' },
-    { title: 'Accesos observados', value: '2', detail: 'Eventos para seguimiento' },
-    { title: 'Sesiones', value: '5', detail: 'Monitoreo activo' },
-  ],
-  ANALISTA: [
-    { title: 'Consumos', value: '24', detail: 'Registros del periodo' },
-    { title: 'Sedes', value: '5', detail: 'Con informacion consolidada' },
-    { title: 'Reportes', value: '3', detail: 'Listos para consultar' },
-  ],
   OPERADOR: [
-    { title: 'Registros', value: '24', detail: 'Consumos disponibles' },
-    { title: 'Recursos', value: '2', detail: 'Energia y agua' },
-    { title: 'Sesion', value: 'Activa', detail: 'Monitoreo basico habilitado' },
+    { title: 'Registros del mes', value: '2', detail: 'Consumos de tu sede' },
+    { title: 'Recursos activos', value: '2', detail: 'Energia y agua' },
+    { title: 'Pendientes', value: '0', detail: 'Sin alertas asignadas' },
   ],
 };
 
 const PANEL_ACTIONS: Record<NombreRol, RoleAction[]> = {
   ADMIN: [
-    { label: 'Gestionar usuarios', detail: 'Crear, editar y asignar roles.', route: '/admin/users' },
-    { label: 'Revisar sesiones', detail: 'Ver actividad de todos los usuarios.', route: '/session-monitoring' },
-    { label: 'Atender alertas', detail: 'Controlar reglas y avisos operativos.', route: '/business-rules' },
+    { label: 'Gestionar usuarios', detail: 'Crear cuentas, asignar sede y controlar estados.', route: '/admin/users' },
+    { label: 'Revisar sesiones', detail: 'Consultar actividad de todos los usuarios.', route: '/session-monitoring' },
+    { label: 'Atender alertas', detail: 'Revisar reglas, umbrales y eventos pendientes.', route: '/business-rules' },
   ],
   GERENTE: [
-    { label: 'Revisar dashboard', detail: 'Ver indicadores y costos consolidados.', route: '/dashboard' },
-    { label: 'Gestionar reglas', detail: 'Crear tarifas y umbrales operativos.', route: '/business-rules' },
-    { label: 'Ver reportes', detail: 'Consultar reportes por periodo y sede.', route: '/reports' },
-  ],
-  AUDITOR: [
-    { label: 'Auditar eventos', detail: 'Filtrar acciones y accesos observados.', route: '/audit' },
-    { label: 'Ver reportes', detail: 'Revisar informacion mensual.', route: '/reports' },
-  ],
-  ANALISTA: [
-    { label: 'Analizar recursos', detail: 'Consultar consumo por sede y recurso.', route: '/resources' },
-    { label: 'Ver reportes', detail: 'Comparar costos y variaciones.', route: '/reports' },
+    { label: 'Revisar indicadores', detail: 'Ver consumo, costo y cumplimiento de tu sede.', route: '/dashboard' },
+    { label: 'Gestionar umbrales', detail: 'Ajustar reglas operativas de la sede.', route: '/business-rules' },
+    { label: 'Generar reportes', detail: 'Consultar documentos ejecutivos del periodo.', route: '/reports' },
   ],
   OPERADOR: [
-    { label: 'Registrar consumo', detail: 'Crear transacciones operativas de energia o agua.', route: '/resources/transactions' },
-    { label: 'Consultar recursos', detail: 'Revisar sedes y tipos de recurso.', route: '/resources' },
+    { label: 'Registrar consumo', detail: 'Agregar consumo de energia o agua.', route: '/resources/transactions' },
+    { label: 'Consultar recursos', detail: 'Revisar informacion de tu sede.', route: '/resources' },
   ],
 };
 
@@ -81,6 +87,14 @@ export class RolePanel {
 
   readonly usuario = this.authService.usuario;
   readonly rolPrincipal = computed<NombreRol>(() => this.authService.roles()[0] ?? 'OPERADOR');
+  readonly copy = computed(() => PANEL_COPY[this.rolPrincipal()]);
   readonly cards = computed(() => PANEL_CARDS[this.rolPrincipal()]);
   readonly acciones = computed(() => PANEL_ACTIONS[this.rolPrincipal()]);
+  readonly fechaTrabajo = computed(() =>
+    new Intl.DateTimeFormat('es-PE', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date()),
+  );
 }
