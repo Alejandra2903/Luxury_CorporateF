@@ -8,13 +8,7 @@ export interface Notificacion {
   mensaje: string;
 }
 
-/**
- * Servicio minimo de notificaciones tipo "toast". Expone un signal con
- * la notificacion activa para que un componente visual (a crear en
- * shared/components en un paso posterior) la renderice. Se mantiene
- * deliberadamente simple en este paso: solo lo necesario para que
- * error.interceptor.ts pueda comunicar errores 403/500 a la UI.
- */
+
 @Injectable({ providedIn: 'root' })
 export class NotificacionService {
   private contador = 0;
