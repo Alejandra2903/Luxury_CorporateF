@@ -12,11 +12,13 @@ import {
   TipoCambio,
 } from '../models/financial-exchange.model';
 import { LocalStorageDataService } from './local-storage-data.service';
+import { AlertCenterService } from './alert-center.service';
 
 @Injectable({ providedIn: 'root' })
 export class FinancialExchangeService {
   private readonly http = inject(HttpClient);
   private readonly storage = inject(LocalStorageDataService);
+  private readonly alertCenter = inject(AlertCenterService);
   private readonly apiBaseUrl = environment.apiBaseUrl;
   private readonly mockDelayMs = 450;
   private readonly monedasKey = 'luxury_monedas';
@@ -65,6 +67,13 @@ export class FinancialExchangeService {
       const nuevo = this.mapearTipoCambio(Date.now(), request, true);
       const tiposCambio = this.storage.obtenerLista(this.tiposCambioKey, TIPOS_CAMBIO_MOCK);
       this.storage.guardarLista(this.tiposCambioKey, [nuevo, ...tiposCambio]);
+      this.alertCenter.crearPorEvento(
+        'RATE_CHANGED',
+        'Sistema',
+        'Tipo de cambio registrado',
+        `${nuevo.monedaOrigenCodigo}/${nuevo.monedaDestinoCodigo}: ${nuevo.tasa}.`,
+        null,
+      );
       return of(nuevo).pipe(delay(this.mockDelayMs));
     }
 
@@ -78,6 +87,13 @@ export class FinancialExchangeService {
       this.storage.guardarLista(
         this.tiposCambioKey,
         tiposCambio.map((item) => (item.id === actualizado.id ? actualizado : item)),
+      );
+      this.alertCenter.crearPorEvento(
+        'RATE_CHANGED',
+        'Sistema',
+        'Tipo de cambio actualizado',
+        `${actualizado.monedaOrigenCodigo}/${actualizado.monedaDestinoCodigo}: ${actualizado.tasa}.`,
+        null,
       );
       return of(actualizado).pipe(delay(this.mockDelayMs));
     }

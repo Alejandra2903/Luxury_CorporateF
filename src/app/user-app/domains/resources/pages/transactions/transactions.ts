@@ -5,6 +5,8 @@ import { forkJoin, startWith } from 'rxjs';
 
 import { ResourcesService } from '../../../../../core/services/resources.service';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { NotificacionService } from '../../../../../core/services/notificacion.service';
+import { SessionMonitoringService } from '../../../../../core/services/session-monitoring.service';
 import { Consumo, Sede, TipoRecurso } from '../../../../../core/models/resources.model';
 import { ConsumptionTable } from '../../components/consumption-table/consumption-table';
 import { ResourceStatCard } from '../../components/resource-stat-card/resource-stat-card';
@@ -20,10 +22,11 @@ export class Transactions {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly resourcesService = inject(ResourcesService);
+  private readonly notificacionService = inject(NotificacionService);
+  private readonly sessionMonitoringService = inject(SessionMonitoringService);
 
   readonly cargando = signal(true);
   readonly guardando = signal(false);
-  readonly mensaje = signal('');
   readonly sedes = signal<Sede[]>([]);
   readonly tipos = signal<TipoRecurso[]>([]);
   readonly consumos = signal<Consumo[]>([]);
@@ -85,7 +88,6 @@ export class Transactions {
 
     const form = this.registroForm.getRawValue();
     this.guardando.set(true);
-    this.mensaje.set('');
     this.resourcesService
       .crearConsumo({
         sedeId: Number(form.sedeId),
@@ -99,7 +101,18 @@ export class Transactions {
         this.consumos.update((consumos) => [consumo, ...consumos]);
         this.aplicarFiltros(this.filtros.getRawValue());
         this.guardando.set(false);
-        this.mensaje.set(`Consumo registrado para ${consumo.sedeNombre}.`);
+        this.notificacionService.exito(`Consumo registrado para ${consumo.sedeNombre}.`);
+        this.sessionMonitoringService.registrarActividadUsuario(
+          'REGISTRO_CONSUMO',
+          `Registro de consumo de ${consumo.tipoRecursoNombre} en ${consumo.sedeNombre}.`,
+          {
+            consumoId: consumo.id,
+            sede: consumo.sedeNombre,
+            recurso: consumo.tipoRecursoNombre,
+            periodo: consumo.periodo,
+            costo: consumo.costo,
+          },
+        );
         this.registroForm.patchValue({
           cantidad: 0,
           costo: 0,

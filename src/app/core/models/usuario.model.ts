@@ -12,6 +12,8 @@ export interface Usuario {
   nombres: string;
   apellidos: string;
   nombreCompleto: string;
+  sedeId: number | null;
+  sedeNombre: string;
   tipoDocumento: TipoDocumento;
   numeroDocumento: string;
   telefono: string;
@@ -30,11 +32,21 @@ export interface CrearUsuarioRequest {
   numeroDocumento: string;
   telefono: string;
   correo: string;
+  contrasena: string;
   roles: string;
+  sedeId: number | null;
 }
 
-export interface ActualizarUsuarioRequest extends CrearUsuarioRequest {
+export interface ActualizarUsuarioRequest {
   id: number;
+  nombres: string;
+  apellidos: string;
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
+  roles: string;
+  sedeId: number | null;
   activo: boolean;
 }
 

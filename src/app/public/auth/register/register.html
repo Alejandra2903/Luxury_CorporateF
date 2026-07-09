@@ -41,7 +41,11 @@
 
         <div class="login-form__field">
           <label for="reg-tipo-documento">Tipo de documento</label>
-          <select id="reg-tipo-documento" formControlName="tipoDocumento">
+          <select
+            id="reg-tipo-documento"
+            formControlName="tipoDocumento"
+            (change)="form.controls.numeroDocumento.updateValueAndValidity()"
+          >
             <option value="DNI">DNI</option>
             <option value="CE">CE</option>
           </select>
@@ -51,7 +55,7 @@
           <label for="reg-documento">Documento</label>
           <input id="reg-documento" type="text" formControlName="numeroDocumento" />
           @if (form.controls.numeroDocumento.invalid && form.controls.numeroDocumento.touched) {
-            <span class="login-form__hint">Ingresa un documento valido</span>
+            <span class="login-form__hint">DNI: 8 digitos. CE: 9 a 12 caracteres</span>
           }
         </div>
 
@@ -59,7 +63,7 @@
           <label for="reg-telefono">Telefono</label>
           <input id="reg-telefono" type="text" formControlName="telefono" autocomplete="tel" />
           @if (form.controls.telefono.invalid && form.controls.telefono.touched) {
-            <span class="login-form__hint">Ingresa al menos 7 digitos</span>
+            <span class="login-form__hint">Ingresa un celular peruano valido</span>
           }
         </div>
 

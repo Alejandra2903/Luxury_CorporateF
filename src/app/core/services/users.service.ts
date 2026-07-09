@@ -4,6 +4,8 @@ import { Observable, delay, of, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { USUARIOS_MOCK } from '../mocks/users.mock';
+import { SEDES_MOCK } from '../mocks/resources.mock';
+import { MOCK_AUTH_USERS } from '../mocks/auth.mock';
 import { LoginRequest, RegistroUsuarioRequest, TokenResponse } from '../models/auth.model';
 import {
   ActualizarUsuarioRequest,
@@ -22,6 +24,7 @@ export class UsersService {
   private readonly apiUrl = `${environment.apiBaseUrl}/usuarios`;
   private readonly storageKey = 'luxury_usuarios';
   private readonly authAccountsKey = 'luxury_auth_accounts';
+  private readonly sedesKey = 'luxury_sedes';
   private readonly mockDelayMs = 350;
 
   obtenerUsuarios(): Observable<Usuario[]> {
@@ -35,11 +38,30 @@ export class UsersService {
   crearUsuario(request: CrearUsuarioRequest): Observable<Usuario> {
     if (environment.useMocks) {
       const usuarios = this.leerUsuarios();
+      const correo = request.correo.trim().toLowerCase();
+
+      if (this.existeCorreo(correo)) {
+        return throwError(() => new Error('Ya existe un usuario con ese correo.'));
+      }
+
+      if (usuarios.some((usuario) => usuario.numeroDocumento === request.numeroDocumento.trim())) {
+        return throwError(() => new Error('Ya existe un usuario con ese documento.'));
+      }
+
       const ahora = new Date().toISOString();
+      const sedeId = this.obtenerSedeUsuario(request.roles, request.sedeId);
       const nuevo: Usuario = {
         id: this.obtenerSiguienteId(usuarios),
-        ...request,
-        nombreCompleto: `${request.nombres} ${request.apellidos}`,
+        nombres: request.nombres.trim(),
+        apellidos: request.apellidos.trim(),
+        nombreCompleto: `${request.nombres.trim()} ${request.apellidos.trim()}`,
+        sedeId,
+        sedeNombre: this.obtenerNombreSede(sedeId),
+        tipoDocumento: request.tipoDocumento,
+        numeroDocumento: request.numeroDocumento.trim(),
+        telefono: request.telefono.trim(),
+        correo,
+        roles: request.roles,
         activo: true,
         estado: 'ACTIVO',
         fechaRegistro: ahora,
@@ -47,6 +69,12 @@ export class UsersService {
       };
 
       this.guardarUsuarios([nuevo, ...usuarios]);
+      this.guardarCuentaAuth({
+        identificador: nuevo.correo,
+        contrasena: request.contrasena,
+        token: `mock-jwt-token-${nuevo.roles.toLowerCase()}-${nuevo.id}`,
+        usuario: nuevo,
+      });
       this.alertCenter.crearParaAdmin(
         'Usuario',
         'Usuario creado por administrador',
@@ -63,6 +91,8 @@ export class UsersService {
       const actualizado: Usuario = {
         ...request,
         nombreCompleto: `${request.nombres} ${request.apellidos}`,
+        sedeId: this.obtenerSedeUsuario(request.roles, request.sedeId),
+        sedeNombre: this.obtenerNombreSede(this.obtenerSedeUsuario(request.roles, request.sedeId)),
         estado: request.activo ? 'ACTIVO' : 'INACTIVO',
         fechaRegistro: this.leerUsuarios().find((usuario) => usuario.id === request.id)?.fechaRegistro
           ?? new Date().toISOString(),
@@ -109,7 +139,7 @@ export class UsersService {
     const usuarios = this.leerUsuarios();
     const correo = request.correo.trim().toLowerCase();
 
-    if (usuarios.some((usuario) => usuario.correo.toLowerCase() === correo)) {
+    if (this.existeCorreo(correo)) {
       return throwError(() => new Error('Ya existe un usuario con ese correo.'));
     }
 
@@ -123,6 +153,8 @@ export class UsersService {
       nombres: request.nombres.trim(),
       apellidos: request.apellidos.trim(),
       nombreCompleto: `${request.nombres.trim()} ${request.apellidos.trim()}`,
+      sedeId: 5,
+      sedeNombre: this.obtenerNombreSede(5),
       tipoDocumento: request.tipoDocumento,
       numeroDocumento: request.numeroDocumento.trim(),
       telefono: request.telefono.trim(),
@@ -168,8 +200,61 @@ export class UsersService {
     };
   }
 
+  sincronizarUsuarioLocal(usuario: Usuario): void {
+    const usuarios = this.leerUsuarios();
+    this.guardarUsuarios(
+      usuarios.map((item) => (item.id === usuario.id ? usuario : item)),
+    );
+    this.actualizarCuentaAuth(usuario);
+  }
+
+  cambiarContrasena(correo: string, actual: string, nueva: string): Observable<boolean> {
+    const identificador = correo.trim().toLowerCase();
+    const cuentas = this.leerCuentasAuth();
+    const cuenta = cuentas.find((item) => item.identificador === identificador);
+
+    if (cuenta) {
+      if (cuenta.contrasena !== actual) {
+        return of(false).pipe(delay(this.mockDelayMs));
+      }
+
+      this.storage.guardarLista(
+        this.authAccountsKey,
+        cuentas.map((item) =>
+          item.identificador === identificador ? { ...item, contrasena: nueva } : item,
+        ),
+      );
+      return of(true).pipe(delay(this.mockDelayMs));
+    }
+
+    const cuentaBase = MOCK_AUTH_USERS.find(
+      (item) => item.identificador === identificador && item.contrasena === actual,
+    );
+
+    if (!cuentaBase) {
+      return of(false).pipe(delay(this.mockDelayMs));
+    }
+
+    this.guardarCuentaAuth({
+      identificador,
+      contrasena: nueva,
+      token: cuentaBase.token,
+      usuario: cuentaBase.usuario,
+    });
+    return of(true).pipe(delay(this.mockDelayMs));
+  }
+
   private leerUsuarios(): Usuario[] {
-    return this.storage.obtenerLista(this.storageKey, USUARIOS_MOCK);
+    const usuarios = this.storage.obtenerLista(this.storageKey, USUARIOS_MOCK);
+    const normalizados = usuarios
+      .filter((usuario) => ['ADMIN', 'GERENTE', 'OPERADOR'].includes(usuario.roles))
+      .map((usuario) => this.normalizarUsuario(usuario));
+
+    if (normalizados.length !== usuarios.length) {
+      this.guardarUsuarios(normalizados);
+    }
+
+    return normalizados;
   }
 
   private guardarUsuarios(usuarios: Usuario[]): void {
@@ -180,8 +265,53 @@ export class UsersService {
     return Math.max(0, ...usuarios.map((usuario) => usuario.id)) + 1;
   }
 
+  private normalizarUsuario(usuario: Usuario): Usuario {
+    const sedeId = this.obtenerSedeUsuario(usuario.roles, usuario.sedeId);
+
+    return {
+      ...usuario,
+      sedeId,
+      sedeNombre: usuario.sedeNombre ?? this.obtenerNombreSede(sedeId),
+    };
+  }
+
+  private obtenerSedeUsuario(roles: string, sedeId: number | null): number | null {
+    if (roles.includes('ADMIN')) {
+      return null;
+    }
+
+    return sedeId ?? this.obtenerSedesDisponibles()[0].id;
+  }
+
+  private obtenerNombreSede(sedeId: number | null): string {
+    if (sedeId === null) {
+      return 'Todas las sedes';
+    }
+
+    return this.obtenerSedesDisponibles().find((sede) => sede.id === sedeId)?.nombre ?? 'Sede asignada';
+  }
+
+  private obtenerSedesDisponibles() {
+    return this.storage.obtenerLista(this.sedesKey, SEDES_MOCK);
+  }
+
+  private existeCorreo(correo: string): boolean {
+    return this.leerUsuarios().some((usuario) => usuario.correo.toLowerCase() === correo)
+      || this.leerCuentasAuth().some((cuenta) => cuenta.identificador === correo)
+      || MOCK_AUTH_USERS.some((cuenta) => cuenta.identificador === correo);
+  }
+
   private leerCuentasAuth(): LocalAuthAccount[] {
-    return this.storage.obtenerLista(this.authAccountsKey, []);
+    const cuentas = this.storage.obtenerLista<LocalAuthAccount>(this.authAccountsKey, []);
+    const cuentasValidas = cuentas.filter((cuenta) =>
+      ['ADMIN', 'GERENTE', 'OPERADOR'].includes(cuenta.usuario.roles),
+    );
+
+    if (cuentasValidas.length !== cuentas.length) {
+      this.storage.guardarLista(this.authAccountsKey, cuentasValidas);
+    }
+
+    return cuentasValidas;
   }
 
   private guardarCuentaAuth(cuenta: LocalAuthAccount): void {
