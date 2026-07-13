@@ -39,6 +39,10 @@ body {
   transition: background-color v.$duration-base v.$ease-out, color v.$duration-base v.$ease-out;
 }
 
+body {
+  overflow-x: hidden;
+}
+
 h1, h2, h3, h4 {
   font-family: v.$font-sans;
   font-weight: 600;
@@ -116,4 +120,78 @@ ul, ol {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+@media (max-width: 760px) {
+  .content,
+  .content * {
+    min-width: 0;
+  }
+
+  .content h1 {
+    font-size: clamp(1.8rem, 10vw, 2.6rem);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  .content .page-header,
+  .content .work-header,
+  .content .panel header,
+  .content .actions-panel header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .content .panel,
+  .content .stat,
+  .content .message,
+  .content .state,
+  .content .welcome-panel,
+  .content .actions-panel,
+  .content .action-card,
+  .content .panel-card {
+    padding: 0.85rem;
+  }
+
+  .content .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .content table {
+    max-width: none;
+  }
+
+  .content input,
+  .content select,
+  .content textarea,
+  .content button {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    font-size: 0.94rem;
+  }
+
+  .content h1 {
+    font-size: clamp(1.65rem, 11vw, 2.25rem);
+  }
+
+  .content .actions,
+  .content .filter-actions,
+  .content .form-actions,
+  .content .row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .content .actions button,
+  .content .filter-actions button,
+  .content .form-actions button {
+    width: 100%;
+  }
 }

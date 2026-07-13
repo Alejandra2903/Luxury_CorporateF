@@ -4,6 +4,10 @@ import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import {
+  celularPeruanoValidator,
+  documentoIdentidadValidator,
+} from '../../../core/validators/identity.validators';
 
 @Component({
   selector: 'app-register',
@@ -27,8 +31,8 @@ export class Register {
     nombres: ['', [Validators.required, Validators.minLength(2)]],
     apellidos: ['', [Validators.required, Validators.minLength(2)]],
     tipoDocumento: ['DNI' as 'DNI' | 'CE', [Validators.required]],
-    numeroDocumento: ['', [Validators.required, Validators.minLength(8)]],
-    telefono: ['', [Validators.required, Validators.minLength(7)]],
+    numeroDocumento: ['', [Validators.required, documentoIdentidadValidator]],
+    telefono: ['', [Validators.required, celularPeruanoValidator]],
     correo: ['', [Validators.required, Validators.email]],
     contrasena: ['', [Validators.required, Validators.minLength(6)]],
     confirmarContrasena: ['', [Validators.required]],
@@ -77,4 +81,3 @@ export class Register {
     return form.contrasena === form.confirmarContrasena;
   }
 }
-

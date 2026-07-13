@@ -13,12 +13,12 @@ interface PermissionRow {
 })
 export class Permissions {
   readonly permisos: PermissionRow[] = [
-    { modulo: 'Dashboard', roles: 'ADMIN, GERENTE, AUDITOR, ANALISTA' },
-    { modulo: 'Recursos', roles: 'ADMIN, GERENTE, ANALISTA, OPERADOR' },
-    { modulo: 'Cambio financiero', roles: 'ADMIN, GERENTE' },
+    { modulo: 'Dashboard', roles: 'ADMIN, GERENTE, OPERADOR' },
+    { modulo: 'Recursos', roles: 'ADMIN, GERENTE, OPERADOR' },
+    { modulo: 'Cambio financiero', roles: 'ADMIN' },
     { modulo: 'Reglas', roles: 'ADMIN, GERENTE' },
-    { modulo: 'Auditoria', roles: 'ADMIN, AUDITOR' },
-    { modulo: 'Reportes', roles: 'ADMIN, GERENTE, AUDITOR, ANALISTA' },
+    { modulo: 'Auditoria', roles: 'ADMIN, GERENTE' },
+    { modulo: 'Reportes', roles: 'ADMIN, GERENTE' },
     { modulo: 'Sesiones', roles: 'ADMIN' },
     { modulo: 'Usuarios', roles: 'ADMIN' },
     { modulo: 'Roles', roles: 'ADMIN' },

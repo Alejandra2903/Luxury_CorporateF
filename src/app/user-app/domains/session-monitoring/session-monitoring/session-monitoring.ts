@@ -35,6 +35,13 @@ export class SessionMonitoring {
     'INACTIVIDAD',
     'REGRESO_SESION',
     'MANIPULACION_DATOS_FINANCIEROS',
+    'REGISTRO_CONSUMO',
+    'GESTION_USUARIOS',
+    'GESTION_SEDES',
+    'GESTION_REGLAS',
+    'GESTION_FINANCIERA',
+    'GENERACION_REPORTE',
+    'ACTUALIZACION_PERFIL',
   ];
 
   readonly filtroForm = this.fb.nonNullable.group({

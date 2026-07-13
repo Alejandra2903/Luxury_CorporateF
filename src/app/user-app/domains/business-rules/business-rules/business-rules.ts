@@ -6,6 +6,9 @@ import { forkJoin } from 'rxjs';
 import { BusinessRulesService } from '../../../../core/services/business-rules.service';
 import { FinancialExchangeService } from '../../../../core/services/financial-exchange.service';
 import { ResourcesService } from '../../../../core/services/resources.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
+import { SessionMonitoringService } from '../../../../core/services/session-monitoring.service';
 import {
   Alerta,
   BusinessRulesResumen,
@@ -27,11 +30,13 @@ export class BusinessRules {
   private readonly businessRulesService = inject(BusinessRulesService);
   private readonly resourcesService = inject(ResourcesService);
   private readonly exchangeService = inject(FinancialExchangeService);
+  private readonly authService = inject(AuthService);
+  private readonly notificacionService = inject(NotificacionService);
+  private readonly sessionMonitoringService = inject(SessionMonitoringService);
 
   readonly cargando = signal(true);
   readonly guardandoTarifa = signal(false);
   readonly guardandoUmbral = signal(false);
-  readonly mensaje = signal<string | null>(null);
   readonly resumen = signal<BusinessRulesResumen | null>(null);
   readonly sedes = signal<Sede[]>([]);
   readonly tipos = signal<TipoRecurso[]>([]);
@@ -43,6 +48,7 @@ export class BusinessRules {
   readonly alertasPendientes = computed(() => this.alertas().filter((alerta) => !alerta.atendida));
   readonly tarifasVigentes = computed(() => this.tarifas().filter((tarifa) => tarifa.vigente));
   readonly umbralesActivos = computed(() => this.umbrales().filter((umbral) => umbral.activo));
+  readonly puedeGestionarTarifas = computed(() => this.authService.roles().includes('ADMIN'));
 
   readonly tarifaForm = this.fb.nonNullable.group({
     sedeId: [1, [Validators.required]],
@@ -80,11 +86,17 @@ export class BusinessRules {
         this.tarifas.set(data.tarifas);
         this.umbrales.set(data.umbrales);
         this.alertas.set(data.alertas);
+        this.configurarSedeInicial(data.sedes);
         this.cargando.set(false);
       });
   }
 
   crearTarifa(): void {
+    if (!this.puedeGestionarTarifas()) {
+      this.notificacionService.advertencia('Solo ADMIN puede cambiar tarifas.');
+      return;
+    }
+
     if (this.tarifaForm.invalid) {
       this.tarifaForm.markAllAsTouched();
       return;
@@ -104,7 +116,17 @@ export class BusinessRules {
       .subscribe((tarifa) => {
         this.tarifas.update((tarifas) => [tarifa, ...tarifas]);
         this.guardandoTarifa.set(false);
-        this.mensaje.set(`Tarifa creada para ${tarifa.sedeNombre}.`);
+        this.notificacionService.exito(`Tarifa creada para ${tarifa.sedeNombre}.`);
+        this.sessionMonitoringService.registrarActividadUsuario(
+          'GESTION_REGLAS',
+          `Creacion de tarifa para ${tarifa.tipoRecursoNombre} en ${tarifa.sedeNombre}.`,
+          {
+            tarifaId: tarifa.id,
+            sede: tarifa.sedeNombre,
+            recurso: tarifa.tipoRecursoNombre,
+            costoUnitario: tarifa.costoUnitario,
+          },
+        );
       });
   }
 
@@ -127,7 +149,18 @@ export class BusinessRules {
       .subscribe((umbral) => {
         this.umbrales.update((umbrales) => [umbral, ...umbrales]);
         this.guardandoUmbral.set(false);
-        this.mensaje.set(`Umbral creado para ${umbral.tipoRecursoNombre}.`);
+        this.notificacionService.exito(`Umbral creado para ${umbral.tipoRecursoNombre}.`);
+        this.sessionMonitoringService.registrarActividadUsuario(
+          'GESTION_REGLAS',
+          `Creacion de umbral para ${umbral.tipoRecursoNombre} en ${umbral.sedeNombre}.`,
+          {
+            umbralId: umbral.id,
+            sede: umbral.sedeNombre,
+            recurso: umbral.tipoRecursoNombre,
+            minimo: umbral.minimo,
+            maximo: umbral.maximo,
+          },
+        );
       });
   }
 
@@ -140,14 +173,32 @@ export class BusinessRules {
             : item,
         ),
       );
-      this.mensaje.set(`Alerta ${alerta.id} atendida.`);
+      this.notificacionService.exito(`Alerta ${alerta.id} atendida.`);
+      this.sessionMonitoringService.registrarActividadUsuario(
+        'GESTION_REGLAS',
+        `Atencion de alerta ${alerta.id} en ${alerta.sedeNombre}.`,
+        {
+          alertaId: alerta.id,
+          severidad: alerta.severidad,
+          sede: alerta.sedeNombre,
+        },
+      );
     });
   }
 
   eliminarUmbral(umbral: Umbral): void {
     this.businessRulesService.eliminarUmbral(umbral.id).subscribe(() => {
       this.umbrales.update((umbrales) => umbrales.filter((item) => item.id !== umbral.id));
-      this.mensaje.set(`Umbral ${umbral.id} retirado.`);
+      this.notificacionService.exito(`Umbral ${umbral.id} retirado.`);
+      this.sessionMonitoringService.registrarActividadUsuario(
+        'GESTION_REGLAS',
+        `Retiro de umbral para ${umbral.tipoRecursoNombre} en ${umbral.sedeNombre}.`,
+        {
+          umbralId: umbral.id,
+          sede: umbral.sedeNombre,
+          recurso: umbral.tipoRecursoNombre,
+        },
+      );
     });
   }
 
@@ -164,5 +215,15 @@ export class BusinessRules {
 
   claseSeveridad(severidad: Alerta['severidad']): string {
     return `severity severity--${severidad.toLowerCase()}`;
+  }
+
+  private configurarSedeInicial(sedes: Sede[]): void {
+    const primeraSede = sedes[0];
+    if (!primeraSede) {
+      return;
+    }
+
+    this.tarifaForm.patchValue({ sedeId: primeraSede.id });
+    this.umbralForm.patchValue({ sedeId: primeraSede.id });
   }
 }

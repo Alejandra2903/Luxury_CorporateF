@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, map, of } from 'rxjs';
+import { Observable, delay, map, of, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
@@ -24,12 +24,14 @@ import {
 } from '../models/business-rules.model';
 import { LocalStorageDataService } from './local-storage-data.service';
 import { AlertCenterService } from './alert-center.service';
+import { AccessScopeService } from './access-scope.service';
 
 @Injectable({ providedIn: 'root' })
 export class BusinessRulesService {
   private readonly http = inject(HttpClient);
   private readonly storage = inject(LocalStorageDataService);
   private readonly alertCenter = inject(AlertCenterService);
+  private readonly accessScope = inject(AccessScopeService);
   private readonly apiBaseUrl = environment.apiBaseUrl;
   private readonly mockDelayMs = 450;
   private readonly tarifasKey = 'luxury_tarifas';
@@ -38,7 +40,8 @@ export class BusinessRulesService {
 
   obtenerTarifas(): Observable<Tarifa[]> {
     if (environment.useMocks) {
-      return of(this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK)).pipe(
+      const tarifas = this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK);
+      return of(this.accessScope.filtrarPorSede(tarifas)).pipe(
         delay(this.mockDelayMs),
       );
     }
@@ -47,9 +50,20 @@ export class BusinessRulesService {
 
   crearTarifa(request: CrearTarifaRequest): Observable<Tarifa> {
     if (environment.useMocks) {
+      if (!this.accessScope.esAdmin()) {
+        return throwError(() => new Error('Solo ADMIN puede cambiar tarifas o tasas.'));
+      }
+
       const tarifa = this.mapearTarifa(Date.now(), request, true);
       const tarifas = this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK);
       this.storage.guardarLista(this.tarifasKey, [tarifa, ...tarifas]);
+      this.alertCenter.crearPorEvento(
+        'RATE_CHANGED',
+        'Sistema',
+        'Tarifa registrada',
+        `${tarifa.sedeNombre} / ${tarifa.tipoRecursoCodigo}: S/ ${tarifa.costoUnitario}.`,
+        tarifa.sedeId,
+      );
       return of(tarifa).pipe(delay(this.mockDelayMs));
     }
     return this.http.post<Tarifa>(`${this.apiBaseUrl}/tarifas`, request);
@@ -57,11 +71,22 @@ export class BusinessRulesService {
 
   actualizarTarifa(request: ActualizarTarifaRequest): Observable<Tarifa> {
     if (environment.useMocks) {
+      if (!this.accessScope.esAdmin()) {
+        return throwError(() => new Error('Solo ADMIN puede cambiar tarifas o tasas.'));
+      }
+
       const tarifa = this.mapearTarifa(request.id, request, request.vigente);
       const tarifas = this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK);
       this.storage.guardarLista(
         this.tarifasKey,
         tarifas.map((item) => (item.id === tarifa.id ? tarifa : item)),
+      );
+      this.alertCenter.crearPorEvento(
+        'RATE_CHANGED',
+        'Sistema',
+        'Tarifa modificada',
+        `${tarifa.sedeNombre} / ${tarifa.tipoRecursoCodigo}: S/ ${tarifa.costoUnitario}.`,
+        tarifa.sedeId,
       );
       return of(tarifa).pipe(delay(this.mockDelayMs));
     }
@@ -88,7 +113,8 @@ export class BusinessRulesService {
 
   obtenerUmbrales(): Observable<Umbral[]> {
     if (environment.useMocks) {
-      return of(this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK)).pipe(
+      const umbrales = this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK);
+      return of(this.accessScope.filtrarPorSede(umbrales)).pipe(
         delay(this.mockDelayMs),
       );
     }
@@ -97,6 +123,10 @@ export class BusinessRulesService {
 
   crearUmbral(request: CrearUmbralRequest): Observable<Umbral> {
     if (environment.useMocks) {
+      if (!this.accessScope.puedeVerSede(request.sedeId)) {
+        return throwError(() => new Error('No puedes configurar umbrales de otra sede.'));
+      }
+
       const umbral = this.mapearUmbral(Date.now(), request, true);
       const umbrales = this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK);
       this.storage.guardarLista(this.umbralesKey, [umbral, ...umbrales]);
@@ -107,6 +137,10 @@ export class BusinessRulesService {
 
   actualizarUmbral(request: ActualizarUmbralRequest): Observable<Umbral> {
     if (environment.useMocks) {
+      if (!this.accessScope.puedeVerSede(request.sedeId)) {
+        return throwError(() => new Error('No puedes editar umbrales de otra sede.'));
+      }
+
       const umbral = this.mapearUmbral(request.id, request, request.activo);
       const umbrales = this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK);
       this.storage.guardarLista(
@@ -132,7 +166,8 @@ export class BusinessRulesService {
 
   obtenerAlertas(): Observable<Alerta[]> {
     if (environment.useMocks) {
-      return of(this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK)).pipe(
+      const alertas = this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK);
+      return of(this.accessScope.filtrarPorSede(alertas)).pipe(
         delay(this.mockDelayMs),
       );
     }
@@ -141,6 +176,10 @@ export class BusinessRulesService {
 
   crearAlerta(request: CrearAlertaRequest): Observable<Alerta> {
     if (environment.useMocks) {
+      if (!this.accessScope.puedeVerSede(request.sedeId)) {
+        return throwError(() => new Error('No puedes generar alertas de otra sede.'));
+      }
+
       const sede = SEDES_MOCK.find((item) => item.id === request.sedeId);
       const tipo = TIPOS_RECURSO_MOCK.find((item) => item.id === request.tipoRecursoId);
       const alerta: Alerta = {
@@ -156,10 +195,12 @@ export class BusinessRulesService {
       };
       const alertas = this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK);
       this.storage.guardarLista(this.alertasKey, [alerta, ...alertas]);
-      this.alertCenter.crearParaAdmin(
+      this.alertCenter.crearPorEvento(
+        'BUDGET_EXCEEDED',
         'Alerta',
         `Alerta ${alerta.severidad.toLowerCase()} generada`,
         `${alerta.sedeNombre} / ${alerta.tipoRecursoCodigo}: ${alerta.mensaje}`,
+        alerta.sedeId,
       );
       return of(alerta).pipe(delay(this.mockDelayMs));
     }
@@ -197,9 +238,15 @@ export class BusinessRulesService {
       return of(BUSINESS_RULES_RESUMEN_MOCK).pipe(delay(this.mockDelayMs));
     }
 
-    const tarifas = this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK);
-    const umbrales = this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK);
-    const alertas = this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK);
+    const tarifas = this.accessScope.filtrarPorSede(
+      this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK),
+    );
+    const umbrales = this.accessScope.filtrarPorSede(
+      this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK),
+    );
+    const alertas = this.accessScope.filtrarPorSede(
+      this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK),
+    );
 
     return of({
       tarifasVigentes: tarifas.filter((tarifa) => tarifa.vigente).length,

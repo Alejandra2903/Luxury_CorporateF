@@ -21,23 +21,13 @@ export class Roles {
     },
     {
       nombre: 'GERENTE',
-      descripcion: 'Gestion de indicadores, recursos, reglas operativas y reportes.',
-      accesos: ['Dashboard', 'Recursos', 'Finanzas', 'Reglas', 'Reportes'],
-    },
-    {
-      nombre: 'AUDITOR',
-      descripcion: 'Revision de auditorias, alertas y reportes.',
-      accesos: ['Dashboard', 'Auditoria', 'Reportes'],
-    },
-    {
-      nombre: 'ANALISTA',
-      descripcion: 'Consulta de dashboard, recursos y reportes.',
-      accesos: ['Dashboard', 'Recursos', 'Reportes'],
+      descripcion: 'Gestion de indicadores, recursos, reglas, auditoria y reportes de su sede.',
+      accesos: ['Dashboard', 'Recursos', 'Reglas', 'Auditoria', 'Reportes'],
     },
     {
       nombre: 'OPERADOR',
-      descripcion: 'Registro operativo de consumos y recursos.',
-      accesos: ['Recursos', 'Transacciones'],
+      descripcion: 'Registro operativo y consulta de recursos de su sede.',
+      accesos: ['Dashboard', 'Recursos', 'Transacciones'],
     },
   ];
 }

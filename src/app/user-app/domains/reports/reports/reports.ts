@@ -8,6 +8,7 @@ import { ReporteMensual, ReporteSede } from '../../../../core/models/reports.mod
 import { Sede } from '../../../../core/models/resources.model';
 import { ReportsService } from '../../../../core/services/reports.service';
 import { ResourcesService } from '../../../../core/services/resources.service';
+import { SessionMonitoringService } from '../../../../core/services/session-monitoring.service';
 
 @Component({
   selector: 'app-reports',
@@ -22,6 +23,7 @@ export class Reports {
   private readonly fb = inject(FormBuilder);
   private readonly reportsService = inject(ReportsService);
   private readonly resourcesService = inject(ResourcesService);
+  private readonly sessionMonitoringService = inject(SessionMonitoringService);
 
   readonly cargando = signal(true);
   readonly descargando = signal(false);
@@ -102,6 +104,14 @@ export class Reports {
           enlace.download = `reporte-luxury-${periodo}.pdf`;
           enlace.click();
           URL.revokeObjectURL(url);
+          this.sessionMonitoringService.registrarActividadUsuario(
+            'GENERACION_REPORTE',
+            `Descarga de reporte mensual ${periodo}.`,
+            {
+              periodo,
+              formato: 'PDF',
+            },
+          );
         },
         error: (error: unknown) => {
           this.error.set(error instanceof Error ? error.message : 'No se pudo descargar el PDF.');
@@ -146,4 +156,3 @@ export class Reports {
     }).format(new Date(fecha));
   }
 }
-

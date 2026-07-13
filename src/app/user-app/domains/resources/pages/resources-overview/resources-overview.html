@@ -23,6 +23,40 @@
       </div>
     }
 
+    @if (puedeCrearSede()) {
+      <form class="panel site-form" [formGroup]="sedeForm" (ngSubmit)="crearSede()">
+        <header>
+          <span>Nueva sede</span>
+        </header>
+
+        <div class="site-form__grid">
+          <label>
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" />
+          </label>
+          <label>
+            <span>Codigo</span>
+            <input type="text" formControlName="codigo" />
+          </label>
+          <label>
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" />
+          </label>
+          <label>
+            <span>Direccion</span>
+            <input type="text" formControlName="direccion" />
+          </label>
+          <label>
+            <span>Responsable</span>
+            <input type="text" formControlName="responsable" />
+          </label>
+          <button type="submit" [disabled]="guardandoSede()">
+            {{ guardandoSede() ? 'Guardando...' : 'Crear sede' }}
+          </button>
+        </div>
+      </form>
+    }
+
     <div class="split">
       <section class="panel">
         <header>
