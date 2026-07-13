@@ -15,15 +15,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const esLogin = req.url.endsWith('/auth/login');
+      const esTelemetria = req.url.includes('/sessions/events');
       const apiError = normalizarError(error);
 
-      if (error.status === 401 && !esLogin) {
+      if (error.status === 401 && !esLogin && !esTelemetria) {
         authService.logout();
         notificacionService.error(mensajePorEstado(error.status));
         router.navigate(['/login']);
       }
 
-      if (debeNotificar(error.status, esLogin)) {
+      if (!esTelemetria && debeNotificar(error.status, esLogin)) {
         notificacionService.error(apiError.message);
       }
 
