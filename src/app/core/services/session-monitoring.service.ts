@@ -5,6 +5,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import {
   Observable,
   Subscription,
+  catchError,
   delay,
   filter,
   fromEvent,
@@ -171,7 +172,9 @@ export class SessionMonitoringService {
       ruta: this.currentRoute,
       descripcion,
       metadata,
-    }).subscribe();
+    })
+      .pipe(catchError(() => of(null)))
+      .subscribe();
   }
 
   obtenerEventos(): Observable<SessionMonitoringEvent[]> {
@@ -265,7 +268,9 @@ export class SessionMonitoringService {
       ruta: this.currentRoute,
       descripcion,
       metadata,
-    }).subscribe();
+    })
+      .pipe(catchError(() => of(null)))
+      .subscribe();
   }
 
   private crearEventoMock(
