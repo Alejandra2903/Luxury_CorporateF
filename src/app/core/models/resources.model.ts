@@ -12,6 +12,14 @@ export interface Sede {
   responsable: string;
 }
 
+export interface CrearSedeRequest {
+  nombre: string;
+  codigo: string;
+  direccion: string;
+  ciudad: string;
+  responsable: string;
+}
+
 export interface TipoRecurso {
   id: number;
   codigo: TipoRecursoCodigo;

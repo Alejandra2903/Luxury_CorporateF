@@ -49,6 +49,36 @@ export class AuthService {
     return this.http.post<Usuario>(`${this.apiUrl}/registro`, request);
   }
 
+  actualizarPerfil(data: { nombres: string; apellidos: string; correo: string; telefono: string }): void {
+    const usuario = this.usuarioActual();
+    if (!usuario) {
+      return;
+    }
+
+    const actualizado: Usuario = {
+      ...usuario,
+      nombres: data.nombres.trim(),
+      apellidos: data.apellidos.trim(),
+      nombreCompleto: `${data.nombres.trim()} ${data.apellidos.trim()}`,
+      correo: data.correo.trim().toLowerCase(),
+      telefono: data.telefono.trim(),
+      fechaActualizacion: new Date().toISOString(),
+    };
+
+    this.tokenStorage.guardarUsuario(JSON.stringify(actualizado));
+    this.usersService.sincronizarUsuarioLocal(actualizado);
+    this.usuarioActual.set(actualizado);
+  }
+
+  cambiarContrasena(actual: string, nueva: string): Observable<boolean> {
+    const usuario = this.usuarioActual();
+    if (!usuario) {
+      return of(false);
+    }
+
+    return this.usersService.cambiarContrasena(usuario.correo, actual, nueva);
+  }
+
 
   logout(): void {
     this.tokenStorage.limpiar();

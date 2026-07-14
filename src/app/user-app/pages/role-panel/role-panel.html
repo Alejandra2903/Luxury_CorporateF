@@ -1,17 +1,22 @@
 <section class="role-panel-page">
-  <header class="page-header">
+  <header class="work-header">
     <div>
-      <p class="eyebrow">Panel</p>
-      <h1>{{ rolPrincipal() }}</h1>
+      <p class="eyebrow">{{ copy().eyebrow }}</p>
+      <h1>{{ copy().title }}</h1>
+      <span>{{ usuario()?.nombreCompleto }} - {{ usuario()?.sedeNombre }}</span>
+    </div>
+    <div class="work-date">
+      <span>Fecha de trabajo</span>
+      <strong>{{ fechaTrabajo() }}</strong>
     </div>
   </header>
 
   <section class="welcome-panel">
     <div>
-      <span>Bienvenido</span>
-      <strong>{{ usuario()?.nombreCompleto }}</strong>
+      <span>Resumen del dia</span>
+      <strong>{{ copy().subtitle }}</strong>
     </div>
-    <p>Estas son las acciones disponibles para tu rol actual.</p>
+    <p>{{ rolPrincipal() }}</p>
   </section>
 
   <div class="panel-grid">
@@ -26,8 +31,8 @@
 
   <section class="actions-panel">
     <header>
-      <span>Acciones del rol</span>
-      <strong>{{ acciones().length }} disponibles</strong>
+      <span>Acciones disponibles</span>
+      <strong>{{ acciones().length }} tareas</strong>
     </header>
 
     <div class="actions-grid">

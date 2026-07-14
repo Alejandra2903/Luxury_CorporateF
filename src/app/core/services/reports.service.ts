@@ -6,11 +6,13 @@ import { environment } from '../../../environments/environment';
 import { REPORTES_MENSUALES_MOCK, REPORTES_SEDE_MOCK } from '../mocks/reports.mock';
 import { ReporteMensual, ReporteSede } from '../models/reports.model';
 import { LocalStorageDataService } from './local-storage-data.service';
+import { AccessScopeService } from './access-scope.service';
 
 @Injectable({ providedIn: 'root' })
 export class ReportsService {
   private readonly http = inject(HttpClient);
   private readonly storage = inject(LocalStorageDataService);
+  private readonly accessScope = inject(AccessScopeService);
   private readonly apiUrl = `${environment.apiBaseUrl}/reportes`;
   private readonly mockDelayMs = 450;
   private readonly monthlyKey = 'luxury_reports_monthly';
@@ -21,7 +23,7 @@ export class ReportsService {
       const reportes = this.storage.obtenerLista(this.monthlyKey, REPORTES_MENSUALES_MOCK);
       const reporte = reportes.find((item) => item.periodo === periodo);
       return reporte
-        ? of(reporte).pipe(delay(this.mockDelayMs))
+        ? of(this.aplicarAlcanceMensual(reporte)).pipe(delay(this.mockDelayMs))
         : throwError(() => new Error(`No existe un reporte para el periodo ${periodo}.`));
     }
 
@@ -33,6 +35,10 @@ export class ReportsService {
     if (environment.useMocks) {
       const reportes = this.storage.obtenerLista(this.siteKey, REPORTES_SEDE_MOCK);
       const reporte = reportes.find((item) => item.sedeId === idSede);
+      if (reporte && !this.accessScope.puedeVerSede(reporte.sedeId)) {
+        return throwError(() => new Error('No tienes permisos para consultar esta sede.'));
+      }
+
       return reporte
         ? of(reporte).pipe(delay(this.mockDelayMs))
         : throwError(() => new Error(`No existe un reporte para la sede ${idSede}.`));
@@ -49,7 +55,7 @@ export class ReportsService {
         return throwError(() => new Error(`No existe un PDF para el periodo ${periodo}.`));
       }
 
-      return of(this.crearPdfMock(reporte)).pipe(delay(650));
+      return of(this.crearPdfMock(this.aplicarAlcanceMensual(reporte))).pipe(delay(650));
     }
 
     const params = new HttpParams().set('periodo', periodo);
@@ -57,6 +63,30 @@ export class ReportsService {
       params,
       responseType: 'blob',
     });
+  }
+
+  private aplicarAlcanceMensual(reporte: ReporteMensual): ReporteMensual {
+    if (this.accessScope.esAdmin()) {
+      return reporte;
+    }
+
+    const sedes = this.accessScope.filtrarPorSede(reporte.sedes);
+    const costoTotal = sedes.reduce((total, sede) => total + sede.costoTotal, 0);
+    const alertasDetectadas = sedes.reduce((total, sede) => total + sede.alertas, 0);
+    const cumplimientoTotal = sedes.reduce(
+      (total, sede) => total + sede.cumplimientoPorcentaje,
+      0,
+    );
+    const cumplimientoPromedio = sedes.length > 0 ? cumplimientoTotal / sedes.length : 0;
+
+    return {
+      ...reporte,
+      sedes,
+      costoTotal,
+      sedesEvaluadas: sedes.length,
+      alertasDetectadas,
+      cumplimientoPromedioPorcentaje: cumplimientoPromedio,
+    };
   }
 
   private crearPdfMock(reporte: ReporteMensual): Blob {

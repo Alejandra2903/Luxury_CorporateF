@@ -6,10 +6,6 @@
     </div>
   </header>
 
-  @if (mensaje()) {
-    <div class="message">{{ mensaje() }}</div>
-  }
-
   <div class="admin-grid">
     <form class="panel user-form" [formGroup]="usuarioForm" (ngSubmit)="guardarUsuario()">
       <header>
@@ -31,7 +27,11 @@
       <div class="fields-two">
         <label for="user-tipo-documento">
           <span>Tipo doc.</span>
-          <select id="user-tipo-documento" formControlName="tipoDocumento">
+          <select
+            id="user-tipo-documento"
+            formControlName="tipoDocumento"
+            (change)="usuarioForm.controls.numeroDocumento.updateValueAndValidity()"
+          >
             <option value="DNI">DNI</option>
             <option value="CE">CE</option>
           </select>
@@ -40,6 +40,9 @@
         <label>
           <span>Numero</span>
           <input id="user-numero-documento" type="text" formControlName="numeroDocumento" />
+          @if (usuarioForm.controls.numeroDocumento.invalid && usuarioForm.controls.numeroDocumento.touched) {
+            <small>DNI: 8 digitos. CE: 9 a 12 caracteres</small>
+          }
         </label>
       </div>
 
@@ -48,10 +51,23 @@
         <input id="user-correo" type="email" formControlName="correo" />
       </label>
 
+      @if (!editandoId()) {
+        <label>
+          <span>Contrasena</span>
+          <input id="user-contrasena" type="password" formControlName="contrasena" autocomplete="new-password" />
+          @if (usuarioForm.controls.contrasena.invalid && usuarioForm.controls.contrasena.touched) {
+            <small>Minimo 6 caracteres</small>
+          }
+        </label>
+      }
+
       <div class="fields-two">
         <label>
           <span>Telefono</span>
           <input id="user-telefono" type="text" formControlName="telefono" />
+          @if (usuarioForm.controls.telefono.invalid && usuarioForm.controls.telefono.touched) {
+            <small>Ingresa un celular peruano valido</small>
+          }
         </label>
 
         <label for="user-roles">
@@ -63,6 +79,15 @@
           </select>
         </label>
       </div>
+
+      <label for="user-sede">
+        <span>Sede asignada</span>
+        <select id="user-sede" formControlName="sedeId">
+          @for (sede of sedes(); track sede.id) {
+            <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+          }
+        </select>
+      </label>
 
       <div class="form-actions">
         <button type="submit" [disabled]="guardando()">
@@ -89,6 +114,7 @@
                 <th>Usuario</th>
                 <th>Documento</th>
                 <th>Rol</th>
+                <th>Sede</th>
                 <th>Estado</th>
                 <th>Registro</th>
                 <th></th>
@@ -103,6 +129,7 @@
                   </td>
                   <td>{{ usuario.tipoDocumento }} {{ usuario.numeroDocumento }}</td>
                   <td>{{ usuario.roles }}</td>
+                  <td>{{ usuario.sedeNombre }}</td>
                   <td>
                     <span class="status" [class.status--off]="!usuario.activo">
                       {{ usuario.estado }}

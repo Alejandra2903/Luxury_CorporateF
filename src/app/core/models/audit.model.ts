@@ -27,6 +27,7 @@ export interface Auditoria {
   usuarioId: number;
   usuarioNombre: string;
   usuarioRol: NombreRol;
+  sedeId: number | null;
   modulo: AuditModulo;
   accion: AuditAccion;
   descripcion: string;
@@ -50,6 +51,7 @@ export interface EventoAcceso {
   usuarioNombre?: string;
   identificador: string;
   rol?: NombreRol;
+  sedeId: number | null;
   tipo: EventoAccesoTipo;
   ipOrigen: string;
   userAgent: string;
