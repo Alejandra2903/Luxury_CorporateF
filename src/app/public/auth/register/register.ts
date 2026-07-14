@@ -12,6 +12,10 @@ import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import {
+  celularPeruanoValidator,
+  documentoIdentidadValidator,
+} from '../../../core/validators/identity.validators';
 
 @Component({
   selector: 'app-register',
@@ -52,16 +56,8 @@ export class Register {
         ],
       ],
       tipoDocumento: ['DNI' as 'DNI' | 'CE', [Validators.required]],
-      numeroDocumento: ['', [Validators.required, this.documentoValidator()]],
-      telefono: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(7),
-          Validators.maxLength(15),
-          Validators.pattern(/^\d+$/),
-        ],
-      ],
+      numeroDocumento: ['', [Validators.required, documentoIdentidadValidator]],
+      telefono: ['', [Validators.required, celularPeruanoValidator]],
       correo: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       contrasena: [
         '',
@@ -126,21 +122,6 @@ export class Register {
     return form.contrasena === form.confirmarContrasena;
   }
 
-  private documentoValidator(): ValidatorFn {
-    return (control): ValidationErrors | null => {
-      const tipoDocumento = control.parent?.get('tipoDocumento')?.value;
-      const valor = control.value;
-      if (!valor || !tipoDocumento) {
-        return null;
-      }
-
-      if (tipoDocumento === 'DNI') {
-        return /^\d{8}$/.test(valor) ? null : { documentoInvalido: true };
-      }
-
-      return /^[A-Za-z0-9]+$/.test(valor) ? null : { documentoInvalido: true };
-    };
-  }
 
   private contrasenasCoincidenValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
@@ -154,4 +135,3 @@ export class Register {
     };
   }
 }
-

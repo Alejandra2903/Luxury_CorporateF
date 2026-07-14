@@ -40,7 +40,7 @@ header > strong {
 
 .bar-row {
   display: grid;
-  grid-template-columns: 2.5rem minmax(8rem, 1fr) 6.5rem;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.7rem;
 }
@@ -68,9 +68,10 @@ header > strong {
   font-size: 0.8rem;
   font-weight: 600;
   text-align: end;
+  white-space: nowrap;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .bar-row {
     grid-template-columns: 2.25rem minmax(0, 1fr);
   }

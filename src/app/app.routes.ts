@@ -34,6 +34,11 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'layout',
+    canActivate: [authGuard],
+    loadChildren: () => import('./user-app/user-app.routes').then((m) => m.USER_APP_ROUTES),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },

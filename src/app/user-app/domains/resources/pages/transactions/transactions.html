@@ -9,10 +9,6 @@
   @if (cargando()) {
     <div class="state">Cargando transacciones...</div>
   } @else {
-    @if (mensaje()) {
-      <div class="message">{{ mensaje() }}</div>
-    }
-
     @if (puedeRegistrar()) {
       <form class="entry-form" [formGroup]="registroForm" (ngSubmit)="registrarConsumo()">
         <header>

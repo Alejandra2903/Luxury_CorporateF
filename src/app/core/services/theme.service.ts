@@ -4,15 +4,7 @@ export type Tema = 'dark' | 'light';
 
 const THEME_KEY = 'luxury_theme';
 
-/**
- * Maneja el tema visual (dark/light) de toda la aplicacion. El tema
- * se aplica como atributo [data-theme] en <html>, que activa las
- * variables CSS correspondientes definidas en styles/_tokens.css.
- *
- * Nota sobre localStorage: la preferencia de tema es informacion no sensible y se
- * beneficia de persistir entre sesiones de navegador, por lo que usa
- * localStorage deliberadamente.
- */
+
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   readonly tema = signal<Tema>(this.resolverTemaInicial());

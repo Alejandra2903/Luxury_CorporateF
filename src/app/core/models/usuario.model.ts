@@ -6,17 +6,14 @@ export type TipoDocumento = 'DNI' | 'CE';
 
 export type EstadoUsuario = 'ACTIVO' | 'INACTIVO';
 
-/**
- * Refleja UsuarioResponse del backend (seguridad/dto/response/UsuarioResponse.java).
- * Nota: "roles" llega como un string separado por ", " (ej. "ADMIN" o "ADMIN, GERENTE"),
- * no como array. Se parsea con el helper parseRoles() cuando se necesite trabajar
- * con los roles individualmente.
- */
+
 export interface Usuario {
   id: number;
   nombres: string;
   apellidos: string;
   nombreCompleto: string;
+  sedeId: number | null;
+  sedeNombre: string;
   tipoDocumento: TipoDocumento;
   numeroDocumento: string;
   telefono: string;
@@ -35,11 +32,21 @@ export interface CrearUsuarioRequest {
   numeroDocumento: string;
   telefono: string;
   correo: string;
+  contrasena: string;
   roles: string;
+  sedeId: number | null;
 }
 
-export interface ActualizarUsuarioRequest extends CrearUsuarioRequest {
+export interface ActualizarUsuarioRequest {
   id: number;
+  nombres: string;
+  apellidos: string;
+  tipoDocumento: TipoDocumento;
+  numeroDocumento: string;
+  telefono: string;
+  correo: string;
+  roles: string;
+  sedeId: number | null;
   activo: boolean;
 }
 
@@ -48,7 +55,7 @@ export interface CambiarEstadoUsuarioRequest {
   activo: boolean;
 }
 
-/** Convierte el string "ADMIN, GERENTE" en un array tipado de roles. */
+
 export function parseRoles(roles: string): NombreRol[] {
   return roles
     .split(',')

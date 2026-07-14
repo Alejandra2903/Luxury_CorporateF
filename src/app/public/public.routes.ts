@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-/** Rutas publicas: no requieren sesion. */
+
 export const PUBLIC_ROUTES: Routes = [
   {
     path: '',

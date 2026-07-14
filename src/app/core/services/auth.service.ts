@@ -9,12 +9,7 @@ import { NombreRol, Usuario, parseRoles } from '../models/usuario.model';
 import { TokenStorageService } from './token-storage.service';
 import { UsersService } from './users.service';
 
-/**
- * Maneja el estado de autenticacion de toda la aplicacion usando Signals.
- * El usuario autenticado (o null) vive en un signal privado; el resto de
- * la app solo puede leerlo a traves de los computed/metodos publicos,
- * nunca mutarlo directamente, manteniendo una unica fuente de verdad.
- */
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -23,16 +18,16 @@ export class AuthService {
 
   private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
 
-  /** Usuario actualmente autenticado, o null si no hay sesion. */
+
   private readonly usuarioActual = signal<Usuario | null>(this.restaurarUsuario());
 
-  /** Señal de solo lectura para el resto de la app. */
+
   readonly usuario = this.usuarioActual.asReadonly();
 
-  /** True si hay un token y un usuario cargados en memoria. */
+
   readonly estaAutenticado = computed(() => this.usuarioActual() !== null);
 
-  /** Roles del usuario actual ya parseados como array tipado. */
+
   readonly roles = computed<NombreRol[]>(() => {
     const usuario = this.usuarioActual();
     return usuario ? parseRoles(usuario.roles) : [];
@@ -54,11 +49,37 @@ export class AuthService {
     return this.http.post<Usuario>(`${this.apiUrl}/registro`, request);
   }
 
-  /**
-   * Cierra la sesion del lado del cliente. Como el backend usa JWT
-   * stateless (sin sesion en servidor), no existe un endpoint de logout:
-   * basta con descartar el token almacenado.
-   */
+  actualizarPerfil(data: { nombres: string; apellidos: string; correo: string; telefono: string }): void {
+    const usuario = this.usuarioActual();
+    if (!usuario) {
+      return;
+    }
+
+    const actualizado: Usuario = {
+      ...usuario,
+      nombres: data.nombres.trim(),
+      apellidos: data.apellidos.trim(),
+      nombreCompleto: `${data.nombres.trim()} ${data.apellidos.trim()}`,
+      correo: data.correo.trim().toLowerCase(),
+      telefono: data.telefono.trim(),
+      fechaActualizacion: new Date().toISOString(),
+    };
+
+    this.tokenStorage.guardarUsuario(JSON.stringify(actualizado));
+    this.usersService.sincronizarUsuarioLocal(actualizado);
+    this.usuarioActual.set(actualizado);
+  }
+
+  cambiarContrasena(actual: string, nueva: string): Observable<boolean> {
+    const usuario = this.usuarioActual();
+    if (!usuario) {
+      return of(false);
+    }
+
+    return this.usersService.cambiarContrasena(usuario.correo, actual, nueva);
+  }
+
+
   logout(): void {
     this.tokenStorage.limpiar();
     this.usuarioActual.set(null);
@@ -68,7 +89,7 @@ export class AuthService {
     return this.tokenStorage.obtenerToken();
   }
 
-  /** Verifica si el usuario actual tiene al menos uno de los roles indicados. */
+
   tieneAlgunRol(rolesPermitidos: NombreRol[]): boolean {
     if (rolesPermitidos.length === 0) {
       return true;
@@ -96,7 +117,7 @@ export class AuthService {
     return of(response).pipe(delay(500));
   }
 
-  /** Restaura el usuario desde localStorage al recargar la pagina. */
+
   private restaurarUsuario(): Usuario | null {
     const token = this.tokenStorage.obtenerToken();
     const usuarioJson = this.tokenStorage.obtenerUsuario();

@@ -5,6 +5,7 @@ import { NavigationEnd, Router } from '@angular/router';
 import {
   Observable,
   Subscription,
+  catchError,
   delay,
   filter,
   fromEvent,
@@ -137,7 +138,7 @@ export class SessionMonitoringService {
   ): Observable<SessionMonitoringEvent> {
     if (!environment.useMocks) {
       return this.http.post<SessionMonitoringEvent>(
-        `${this.apiBaseUrl}/session-monitoring/eventos`,
+        `${this.apiBaseUrl}/sessions/events`,
         request,
       );
     }
@@ -148,6 +149,14 @@ export class SessionMonitoringService {
   }
 
   registrarManipulacionDatosFinancieros(
+    descripcion: string,
+    metadata?: Record<string, string | number | boolean>,
+  ): void {
+    this.registrarActividadUsuario('GESTION_FINANCIERA', descripcion, metadata);
+  }
+
+  registrarActividadUsuario(
+    tipo: SessionEventType,
     descripcion: string,
     metadata?: Record<string, string | number | boolean>,
   ): void {
@@ -163,7 +172,9 @@ export class SessionMonitoringService {
       ruta: this.currentRoute,
       descripcion,
       metadata,
-    }).subscribe();
+    })
+      .pipe(catchError(() => of(null)))
+      .subscribe();
   }
 
   obtenerEventos(): Observable<SessionMonitoringEvent[]> {
@@ -210,6 +221,19 @@ export class SessionMonitoringService {
     );
   }
 
+  obtenerEventosDePerfil(): Observable<SessionMonitoringEvent[]> {
+    const usuario = this.authService.usuario();
+    if (!usuario) {
+      return of([]);
+    }
+
+    if (this.authService.roles().includes('ADMIN')) {
+      return this.obtenerEventos();
+    }
+
+    return this.obtenerEventosPorUsuario(usuario.id);
+  }
+
   obtenerResumen(): Observable<SessionMonitoringResumen> {
     return this.obtenerEventos().pipe(
       map((eventos) => ({
@@ -244,7 +268,9 @@ export class SessionMonitoringService {
       ruta: this.currentRoute,
       descripcion,
       metadata,
-    }).subscribe();
+    })
+      .pipe(catchError(() => of(null)))
+      .subscribe();
   }
 
   private crearEventoMock(
@@ -319,6 +345,13 @@ export class SessionMonitoringService {
       INACTIVIDAD: 'ALTA',
       REGRESO_SESION: 'INFO',
       MANIPULACION_DATOS_FINANCIEROS: 'CRITICA',
+      REGISTRO_CONSUMO: 'INFO',
+      GESTION_USUARIOS: 'MEDIA',
+      GESTION_SEDES: 'MEDIA',
+      GESTION_REGLAS: 'MEDIA',
+      GESTION_FINANCIERA: 'CRITICA',
+      GENERACION_REPORTE: 'INFO',
+      ACTUALIZACION_PERFIL: 'INFO',
     };
 
     return severidades[tipo];
