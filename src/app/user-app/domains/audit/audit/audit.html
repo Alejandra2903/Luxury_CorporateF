@@ -3,24 +3,21 @@
     <div>
       <p class="eyebrow">Auditoria</p>
       <h1>Auditoria y accesos</h1>
-      <p>Trazabilidad mock de acciones internas y eventos de acceso preparada para los endpoints REST reales.</p>
     </div>
   </header>
 
   @if (cargando()) {
-    <div class="state">Cargando auditoria mock...</div>
+    <div class="state">Cargando auditoria...</div>
   } @else {
     @if (resumen(); as data) {
       <div class="stat-grid">
         <article class="stat">
           <span>Auditorias</span>
           <strong>{{ data.totalAuditorias }}</strong>
-          <small>GET /api/auditorias</small>
         </article>
         <article class="stat">
           <span>Eventos acceso</span>
           <strong>{{ data.totalEventosAcceso }}</strong>
-          <small>GET /api/eventos-acceso</small>
         </article>
         <article class="stat stat--warning">
           <span>Observados</span>

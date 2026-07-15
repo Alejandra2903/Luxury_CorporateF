@@ -11,16 +11,24 @@ import {
   Moneda,
   TipoCambio,
 } from '../models/financial-exchange.model';
+import { LocalStorageDataService } from './local-storage-data.service';
+import { AlertCenterService } from './alert-center.service';
 
 @Injectable({ providedIn: 'root' })
 export class FinancialExchangeService {
   private readonly http = inject(HttpClient);
+  private readonly storage = inject(LocalStorageDataService);
+  private readonly alertCenter = inject(AlertCenterService);
   private readonly apiBaseUrl = environment.apiBaseUrl;
   private readonly mockDelayMs = 450;
+  private readonly monedasKey = 'luxury_monedas';
+  private readonly tiposCambioKey = 'luxury_tipos_cambio';
 
   obtenerMonedas(): Observable<Moneda[]> {
     if (environment.useMocks) {
-      return of(MONEDAS_MOCK).pipe(delay(this.mockDelayMs));
+      return of(this.storage.obtenerLista(this.monedasKey, MONEDAS_MOCK)).pipe(
+        delay(this.mockDelayMs),
+      );
     }
 
     return this.http.get<Moneda[]>(`${this.apiBaseUrl}/monedas`);
@@ -36,6 +44,8 @@ export class FinancialExchangeService {
         activa: true,
       };
 
+      const monedas = this.storage.obtenerLista(this.monedasKey, MONEDAS_MOCK);
+      this.storage.guardarLista(this.monedasKey, [nueva, ...monedas]);
       return of(nueva).pipe(delay(this.mockDelayMs));
     }
 
@@ -44,7 +54,9 @@ export class FinancialExchangeService {
 
   obtenerTiposCambio(): Observable<TipoCambio[]> {
     if (environment.useMocks) {
-      return of(TIPOS_CAMBIO_MOCK).pipe(delay(this.mockDelayMs));
+      return of(this.storage.obtenerLista(this.tiposCambioKey, TIPOS_CAMBIO_MOCK)).pipe(
+        delay(this.mockDelayMs),
+      );
     }
 
     return this.http.get<TipoCambio[]>(`${this.apiBaseUrl}/tipos-cambio`);
@@ -53,6 +65,15 @@ export class FinancialExchangeService {
   crearTipoCambio(request: CrearTipoCambioRequest): Observable<TipoCambio> {
     if (environment.useMocks) {
       const nuevo = this.mapearTipoCambio(Date.now(), request, true);
+      const tiposCambio = this.storage.obtenerLista(this.tiposCambioKey, TIPOS_CAMBIO_MOCK);
+      this.storage.guardarLista(this.tiposCambioKey, [nuevo, ...tiposCambio]);
+      this.alertCenter.crearPorEvento(
+        'RATE_CHANGED',
+        'Sistema',
+        'Tipo de cambio registrado',
+        `${nuevo.monedaOrigenCodigo}/${nuevo.monedaDestinoCodigo}: ${nuevo.tasa}.`,
+        null,
+      );
       return of(nuevo).pipe(delay(this.mockDelayMs));
     }
 
@@ -62,6 +83,18 @@ export class FinancialExchangeService {
   actualizarTipoCambio(request: ActualizarTipoCambioRequest): Observable<TipoCambio> {
     if (environment.useMocks) {
       const actualizado = this.mapearTipoCambio(request.id, request, request.activo);
+      const tiposCambio = this.storage.obtenerLista(this.tiposCambioKey, TIPOS_CAMBIO_MOCK);
+      this.storage.guardarLista(
+        this.tiposCambioKey,
+        tiposCambio.map((item) => (item.id === actualizado.id ? actualizado : item)),
+      );
+      this.alertCenter.crearPorEvento(
+        'RATE_CHANGED',
+        'Sistema',
+        'Tipo de cambio actualizado',
+        `${actualizado.monedaOrigenCodigo}/${actualizado.monedaDestinoCodigo}: ${actualizado.tasa}.`,
+        null,
+      );
       return of(actualizado).pipe(delay(this.mockDelayMs));
     }
 
@@ -73,8 +106,9 @@ export class FinancialExchangeService {
     request: CrearTipoCambioRequest,
     activo: boolean,
   ): TipoCambio {
-    const origen = MONEDAS_MOCK.find((moneda) => moneda.id === request.monedaOrigenId);
-    const destino = MONEDAS_MOCK.find((moneda) => moneda.id === request.monedaDestinoId);
+    const monedas = this.storage.obtenerLista(this.monedasKey, MONEDAS_MOCK);
+    const origen = monedas.find((moneda) => moneda.id === request.monedaOrigenId);
+    const destino = monedas.find((moneda) => moneda.id === request.monedaDestinoId);
 
     return {
       id,

@@ -30,17 +30,74 @@ h1 {
 }
 
 .filters,
+.entry-form,
 .stat-grid {
   display: grid;
   gap: 0.75rem;
 }
 
-.filters {
+.filters,
+.entry-form {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
+}
+
+.entry-form {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.entry-form header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.entry-form header span {
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.entry-form header strong {
+  color: var(--text-primary);
+}
+
+.entry-form label {
+  grid-column: span 2;
+}
+
+.entry-form__wide {
+  grid-column: span 4;
+}
+
+.entry-form button {
+  align-self: end;
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font-weight: 700;
+}
+
+.entry-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.message {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 700;
 }
 
 label {
@@ -79,7 +136,13 @@ input {
 
 @media (max-width: 900px) {
   .filters,
+  .entry-form,
   .stat-grid {
     grid-template-columns: 1fr;
+  }
+
+  .entry-form label,
+  .entry-form__wide {
+    grid-column: auto;
   }
 }

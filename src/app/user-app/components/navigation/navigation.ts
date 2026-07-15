@@ -11,44 +11,42 @@ interface NavigationItem {
   roles: NombreRol[];
 }
 
-const TODOS_AUTENTICADOS: NombreRol[] = ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA', 'OPERADOR'];
-
 const NAVIGATION_ITEMS: NavigationItem[] = [
   {
     label: 'Dashboard',
     shortLabel: 'D',
     route: '/dashboard',
-    roles: ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA'],
+    roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
   },
   {
     label: 'Recursos',
     shortLabel: 'R',
     route: '/resources',
-    roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+    roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
   },
   {
     label: 'Energia',
     shortLabel: 'E',
     route: '/resources/energy',
-    roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+    roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
   },
   {
     label: 'Agua',
     shortLabel: 'A',
     route: '/resources/water',
-    roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+    roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
   },
   {
     label: 'Transacciones',
     shortLabel: 'T',
     route: '/resources/transactions',
-    roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+    roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
   },
   {
     label: 'Cambio financiero',
     shortLabel: 'F',
     route: '/financial-exchange',
-    roles: ['ADMIN', 'GERENTE'],
+    roles: ['ADMIN'],
   },
   {
     label: 'Reglas',
@@ -60,19 +58,19 @@ const NAVIGATION_ITEMS: NavigationItem[] = [
     label: 'Auditoria',
     shortLabel: 'U',
     route: '/audit',
-    roles: ['ADMIN', 'AUDITOR'],
+    roles: ['ADMIN', 'GERENTE'],
   },
   {
     label: 'Reportes',
     shortLabel: 'P',
     route: '/reports',
-    roles: ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA'],
+    roles: ['ADMIN', 'GERENTE'],
   },
   {
     label: 'Sesiones',
     shortLabel: 'S',
     route: '/session-monitoring',
-    roles: TODOS_AUTENTICADOS,
+    roles: ['ADMIN'],
   },
   {
     label: 'Usuarios',

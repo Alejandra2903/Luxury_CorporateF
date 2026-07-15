@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { FinancialExchangeService } from '../../../../core/services/financial-exchange.service';
 import { Moneda, TipoCambio } from '../../../../core/models/financial-exchange.model';
 import { SessionMonitoringService } from '../../../../core/services/session-monitoring.service';
+import { NotificacionService } from '../../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-financial-exchange',
@@ -18,11 +19,11 @@ export class FinancialExchange {
   private readonly fb = inject(FormBuilder);
   private readonly exchangeService = inject(FinancialExchangeService);
   private readonly sessionMonitoringService = inject(SessionMonitoringService);
+  private readonly notificacionService = inject(NotificacionService);
 
   readonly cargando = signal(true);
   readonly guardandoMoneda = signal(false);
   readonly guardandoCambio = signal(false);
-  readonly mensaje = signal<string | null>(null);
   readonly monedas = signal<Moneda[]>([]);
   readonly tiposCambio = signal<TipoCambio[]>([]);
   readonly tipoCambioEditando = signal<TipoCambio | null>(null);
@@ -80,8 +81,9 @@ export class FinancialExchange {
         this.monedas.update((monedas) => [moneda, ...monedas]);
         this.monedaForm.reset({ codigo: '', nombre: '', simbolo: '' });
         this.guardandoMoneda.set(false);
-        this.mensaje.set(`Moneda ${moneda.codigo} creada en modo mock.`);
-        this.sessionMonitoringService.registrarManipulacionDatosFinancieros(
+        this.notificacionService.exito(`Moneda ${moneda.codigo} creada.`);
+        this.sessionMonitoringService.registrarActividadUsuario(
+          'GESTION_FINANCIERA',
           `Creacion de moneda ${moneda.codigo}.`,
           {
             entidad: 'moneda',
@@ -121,12 +123,13 @@ export class FinancialExchange {
       });
       this.tipoCambioEditando.set(null);
       this.guardandoCambio.set(false);
-      this.mensaje.set(
+      this.notificacionService.exito(
         editando
           ? `Tipo de cambio ${tipoCambio.monedaOrigenCodigo}/${tipoCambio.monedaDestinoCodigo} actualizado.`
           : `Tipo de cambio ${tipoCambio.monedaOrigenCodigo}/${tipoCambio.monedaDestinoCodigo} creado.`,
       );
-      this.sessionMonitoringService.registrarManipulacionDatosFinancieros(
+      this.sessionMonitoringService.registrarActividadUsuario(
+        'GESTION_FINANCIERA',
         `${editando ? 'Actualizacion' : 'Creacion'} de tipo de cambio ${tipoCambio.monedaOrigenCodigo}/${tipoCambio.monedaDestinoCodigo}.`,
         {
           entidad: 'tipo-cambio',

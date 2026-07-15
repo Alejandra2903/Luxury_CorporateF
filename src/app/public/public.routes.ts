@@ -1,10 +1,6 @@
 import { Routes } from '@angular/router';
 
-/**
- * Rutas publicas: no requieren sesion. Por ahora solo /login esta
- * implementado; /registro y la landing page se agregan en pasos
- * posteriores siguiendo el mismo patron.
- */
+
 export const PUBLIC_ROUTES: Routes = [
   {
     path: '',
@@ -20,6 +16,11 @@ export const PUBLIC_ROUTES: Routes = [
         path: 'login',
         loadComponent: () => import('./auth/login/login').then((m) => m.Login),
         title: 'Luxury - Iniciar sesion',
+      },
+      {
+        path: 'registro',
+        loadComponent: () => import('./auth/register/register').then((m) => m.Register),
+        title: 'Luxury - Registro',
       },
     ],
   },

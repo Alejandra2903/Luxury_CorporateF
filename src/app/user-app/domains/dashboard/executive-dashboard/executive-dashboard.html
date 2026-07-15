@@ -3,9 +3,6 @@
     <div>
       <p class="eyebrow">Dashboard</p>
       <h1>Centro ejecutivo</h1>
-      <p>
-        Resumen mock de consumo, costo y riesgo operativo preparado para los endpoints reales.
-      </p>
     </div>
 
     <app-currency-selector
@@ -18,7 +15,7 @@
   @if (cargando()) {
     <div class="state state--loading">
       <span></span>
-      <strong>Cargando dashboard mock</strong>
+      <strong>Cargando dashboard</strong>
     </div>
   } @else if (error()) {
     <div class="state state--error">

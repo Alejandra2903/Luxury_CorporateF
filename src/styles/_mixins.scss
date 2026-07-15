@@ -13,7 +13,7 @@
   justify-content: space-between;
 }
 
-// Tarjetas: borde hairline, sin sombra — la jerarquía la da el borde, no la elevación
+
 @mixin surface {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -33,7 +33,7 @@
   transition-timing-function: v.$ease-out;
 }
 
-// Cifras: tabular-nums siempre, para que las columnas de datos alineen
+
 @mixin numeric {
   font-family: v.$font-mono;
   font-variant-numeric: tabular-nums;

@@ -1,0 +1,32 @@
+<section class="admin-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administracion</p>
+      <h1>Permisos</h1>
+    </div>
+  </header>
+
+  <section class="panel">
+    <header>
+      <span>Accesos por rol</span>
+    </header>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Modulo</th>
+            <th>Roles permitidos</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (permiso of permisos; track permiso.modulo) {
+            <tr>
+              <td><strong>{{ permiso.modulo }}</strong></td>
+              <td>{{ permiso.roles }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

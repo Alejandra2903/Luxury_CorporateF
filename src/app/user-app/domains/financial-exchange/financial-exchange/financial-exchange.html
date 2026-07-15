@@ -3,17 +3,12 @@
     <div>
       <p class="eyebrow">Finanzas</p>
       <h1>Cambio financiero</h1>
-      <p>Gestion mock de monedas y tipos de cambio preparada para los endpoints REST reales.</p>
     </div>
   </header>
 
   @if (cargando()) {
-    <div class="state">Cargando informacion financiera mock...</div>
+    <div class="state">Cargando informacion financiera...</div>
   } @else {
-    @if (mensaje()) {
-      <div class="message">{{ mensaje() }}</div>
-    }
-
     <div class="stat-grid">
       <article class="stat">
         <span>Monedas activas</span>
@@ -36,7 +31,6 @@
       <form class="panel form-panel" [formGroup]="monedaForm" (ngSubmit)="crearMoneda()">
         <header>
           <span>Nueva moneda</span>
-          <strong>POST /api/monedas</strong>
         </header>
 
         <label>
@@ -65,7 +59,6 @@
       <form class="panel form-panel" [formGroup]="tipoCambioForm" (ngSubmit)="guardarTipoCambio()">
         <header>
           <span>{{ tipoCambioEditando() ? 'Editar tipo' : 'Nuevo tipo' }}</span>
-          <strong>{{ tipoCambioEditando() ? 'PUT' : 'POST' }} /api/tipos-cambio</strong>
         </header>
 
         <div class="inline-fields">
@@ -125,7 +118,6 @@
       <section class="panel">
         <header>
           <span>Monedas</span>
-          <strong>GET /api/monedas</strong>
         </header>
         <div class="table-wrap">
           <table>
@@ -154,7 +146,6 @@
       <section class="panel">
         <header>
           <span>Tipos de cambio</span>
-          <strong>GET /api/tipos-cambio</strong>
         </header>
         <div class="table-wrap">
           <table>

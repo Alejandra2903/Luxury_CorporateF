@@ -7,13 +7,221 @@
       </div>
 
       <div class="topbar__actions">
-        <button type="button" class="theme-toggle" (click)="alternarTema()" [attr.aria-label]="'Cambiar a tema ' + (tema() === 'dark' ? 'claro' : 'oscuro')">
-          <span aria-hidden="true">{{ tema() === 'dark' ? '☀️' : '🌙' }}</span>
+        <button
+          type="button"
+          class="icon-button"
+          (click)="alternarTema()"
+          [attr.aria-label]="'Cambiar a tema ' + (tema() === 'dark' ? 'claro' : 'oscuro')"
+        >
+          @if (tema() === 'dark') {
+            <span aria-hidden="true">&#9728;</span>
+          } @else {
+            <span aria-hidden="true">&#9790;</span>
+          }
         </button>
-        <div class="user-chip">
-          <span>ADMIN</span>
-          <strong>{{ usuario()?.nombreCompleto }}</strong>
+
+        <div class="header-menu">
+          <button
+            type="button"
+            class="icon-button icon-button--notification"
+            (click)="alternarNotificaciones()"
+            [class.is-active]="notificacionesAbiertas()"
+            [attr.aria-expanded]="notificacionesAbiertas()"
+            aria-label="Abrir notificaciones"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M15 17H9m9-2V11a6 6 0 0 0-12 0v4l-2 2h16l-2-2Zm-7 5h2" />
+            </svg>
+            @if (pendientes() > 0) {
+              <span class="notification-badge">{{ pendientes() }}</span>
+            }
+          </button>
+
+          @if (notificacionesAbiertas()) {
+            <section class="header-popover notification-popover" aria-label="Notificaciones">
+              <div class="popover-header">
+                <div>
+                  <span>Centro de avisos</span>
+                  <strong>{{ pendientes() }} pendientes</strong>
+                </div>
+                <button type="button" class="popover-link" (click)="marcarNotificacionesLeidas()">
+                  Marcar leidas
+                </button>
+              </div>
+
+              <div class="notification-list">
+                @for (notificacion of notificaciones(); track notificacion.id) {
+                  <article class="notification-item" [class.is-read]="notificacion.leida">
+                    <div>
+                      <span>{{ notificacion.tipo }}</span>
+                      <strong>{{ notificacion.titulo }}</strong>
+                      <p>{{ notificacion.detalle }}</p>
+                    </div>
+                    @if (!notificacion.leida) {
+                      <button
+                        type="button"
+                        class="notification-check"
+                        (click)="marcarNotificacionLeida(notificacion.id)"
+                        aria-label="Marcar notificacion como leida"
+                      >
+                        Listo
+                      </button>
+                    }
+                  </article>
+                } @empty {
+                  <p class="notification-empty">No hay avisos para tu perfil.</p>
+                }
+              </div>
+            </section>
+          }
         </div>
+
+        <div class="header-menu">
+          <button
+            type="button"
+            class="profile-button"
+            (click)="alternarPerfil()"
+            [class.is-active]="perfilAbierto()"
+            [attr.aria-expanded]="perfilAbierto()"
+            aria-label="Abrir perfil"
+          >
+            <span class="profile-avatar" aria-hidden="true">{{ usuarioInicial() }}</span>
+          </button>
+
+          @if (perfilAbierto()) {
+            <section class="header-popover profile-popover" aria-label="Mi perfil">
+              <nav class="profile-tabs" aria-label="Secciones de perfil">
+                <button type="button" [class.is-current]="perfilTab() === 'datos'" (click)="seleccionarPerfilTab('datos')">Datos personales</button>
+                <button type="button" [class.is-current]="perfilTab() === 'seguridad'" (click)="seleccionarPerfilTab('seguridad')">Seguridad</button>
+                <button type="button" [class.is-current]="perfilTab() === 'actividad'" (click)="seleccionarPerfilTab('actividad')">Actividad</button>
+              </nav>
+
+              @if (perfilTab() === 'datos') {
+                <div class="profile-heading">
+                  <div>
+                    <span class="profile-popover__eyebrow">Datos personales</span>
+                    <strong>{{ usuario()?.nombreCompleto }}</strong>
+                    <p>Asegurese de brindar informacion correcta.</p>
+                  </div>
+                  <span class="profile-popover__role">{{ usuario()?.roles }}</span>
+                </div>
+
+                <div class="profile-summary">
+                  <span class="profile-avatar profile-avatar--large" aria-hidden="true">{{ usuarioInicial() }}</span>
+                  <div>
+                    <strong>{{ usuario()?.nombreCompleto }}</strong>
+                    <p>{{ usuario()?.correo }}</p>
+                  </div>
+                  @if (!editandoPerfil()) {
+                    <button type="button" class="profile-edit-button" (click)="activarEdicionPerfil()">Editar</button>
+                  }
+                </div>
+
+                @if (perfilMensaje()) {
+                  <p class="profile-message">{{ perfilMensaje() }}</p>
+                }
+
+                <div class="profile-data">
+                  <label>
+                    <span>Nombres</span>
+                    <input #perfilNombres type="text" [value]="usuario()?.nombres ?? ''" [disabled]="!editandoPerfil()" />
+                  </label>
+                  <label>
+                    <span>Apellidos</span>
+                    <input #perfilApellidos type="text" [value]="usuario()?.apellidos ?? ''" [disabled]="!editandoPerfil()" />
+                  </label>
+                  <label>
+                    <span>Correo electronico</span>
+                    <input #perfilCorreo type="email" [value]="usuario()?.correo ?? ''" [disabled]="!editandoPerfil()" />
+                  </label>
+                  <label>
+                    <span>Telefono</span>
+                    <input #perfilTelefono type="text" [value]="usuario()?.telefono ?? ''" [disabled]="!editandoPerfil()" />
+                  </label>
+                  <label>
+                    <span>Sede asignada</span>
+                    <input type="text" [value]="usuario()?.sedeNombre ?? ''" disabled />
+                  </label>
+                  <label>
+                    <span>Estado</span>
+                    <input type="text" [value]="usuario()?.estado ?? ''" disabled />
+                  </label>
+                </div>
+
+                @if (editandoPerfil()) {
+                  <div class="profile-actions">
+                    <button type="button" class="profile-secondary" (click)="cancelarEdicionPerfil()">Cancelar</button>
+                    <button type="button" class="profile-primary" (click)="guardarPerfil(perfilNombres.value, perfilApellidos.value, perfilCorreo.value, perfilTelefono.value)">Guardar</button>
+                  </div>
+                }
+              }
+
+              @if (perfilTab() === 'seguridad') {
+                <div class="profile-heading">
+                  <div>
+                    <span class="profile-popover__eyebrow">Seguridad</span>
+                    <strong>Cambiar contrasena</strong>
+                    <p>Asegurese de cumplir con los caracteres para una contrasena segura.</p>
+                  </div>
+                </div>
+
+                @if (seguridadMensaje()) {
+                  <p class="profile-message">{{ seguridadMensaje() }}</p>
+                }
+
+                <div class="security-grid">
+                  <label>
+                    <span>Contrasena actual</span>
+                    <input #claveActual type="password" autocomplete="current-password" />
+                  </label>
+                  <label>
+                    <span>Nueva contrasena</span>
+                    <input #claveNueva type="password" autocomplete="new-password" />
+                  </label>
+                  <label>
+                    <span>Confirmar contrasena</span>
+                    <input #claveConfirmar type="password" autocomplete="new-password" />
+                  </label>
+                </div>
+
+                <div class="profile-actions">
+                  <button type="button" class="profile-secondary" (click)="claveActual.value = ''; claveNueva.value = ''; claveConfirmar.value = ''">Cancelar</button>
+                  <button type="button" class="profile-primary" (click)="guardarSeguridad(claveActual.value, claveNueva.value, claveConfirmar.value)">Guardar</button>
+                </div>
+              }
+
+              @if (perfilTab() === 'actividad') {
+                <div class="profile-heading">
+                  <div>
+                    <span class="profile-popover__eyebrow">Actividad</span>
+                    <strong>Registro de sesion</strong>
+                    <p>Admin ve todos los eventos. Los demas roles ven solo su propia actividad.</p>
+                  </div>
+                </div>
+
+                <div class="activity-list">
+                  @if (cargandoActividad()) {
+                    <p class="activity-empty">Cargando actividad...</p>
+                  } @else {
+                    @for (evento of actividad(); track evento.id) {
+                      <article class="activity-item">
+                        <span>{{ evento.severidad }}</span>
+                        <div>
+                          <strong>{{ evento.tipo }}</strong>
+                          <p>{{ evento.descripcion }}</p>
+                          <small>{{ evento.usuarioNombre }} - {{ evento.ruta }} - {{ formatearActividadFecha(evento.fechaEvento) }}</small>
+                        </div>
+                      </article>
+                    } @empty {
+                      <p class="activity-empty">No hay actividad registrada para este perfil.</p>
+                    }
+                  }
+                </div>
+              }
+            </section>
+          }
+        </div>
+
         <button type="button" class="text-button" (click)="cerrarSesion()">Salir</button>
       </div>
     </header>

@@ -69,9 +69,9 @@
     [attr.aria-label]="'Cambiar a tema ' + (temaActual() === 'dark' ? 'claro' : 'oscuro')"
   >
     @if (temaActual() === 'dark') {
-      <span aria-hidden="true">L</span>
+      <span aria-hidden="true">&#9728;</span>
     } @else {
-      <span aria-hidden="true">D</span>
+      <span aria-hidden="true">&#9790;</span>
     }
   </button>
 </div>

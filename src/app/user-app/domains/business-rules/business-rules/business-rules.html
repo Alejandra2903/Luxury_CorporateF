@@ -3,33 +3,25 @@
     <div>
       <p class="eyebrow">Reglas</p>
       <h1>Reglas de negocio</h1>
-      <p>Tarifas, umbrales y alertas operativas preparadas para el contrato REST real.</p>
     </div>
   </header>
 
   @if (cargando()) {
-    <div class="state">Cargando reglas mock...</div>
+    <div class="state">Cargando reglas...</div>
   } @else {
-    @if (mensaje()) {
-      <div class="message">{{ mensaje() }}</div>
-    }
-
     @if (resumen(); as data) {
       <div class="stat-grid">
         <article class="stat">
           <span>Tarifas vigentes</span>
           <strong>{{ tarifasVigentes().length }}</strong>
-          <small>GET /api/tarifas</small>
         </article>
         <article class="stat">
           <span>Umbrales activos</span>
           <strong>{{ umbralesActivos().length }}</strong>
-          <small>GET /api/umbrales</small>
         </article>
         <article class="stat">
           <span>Alertas pendientes</span>
           <strong>{{ alertasPendientes().length }}</strong>
-          <small>GET /api/alertas</small>
         </article>
         <article class="stat stat--danger">
           <span>Criticas</span>
@@ -40,69 +32,69 @@
     }
 
     <div class="forms-grid">
-      <form class="panel form-panel" [formGroup]="tarifaForm" (ngSubmit)="crearTarifa()">
-        <header>
-          <span>Nueva tarifa</span>
-          <strong>POST /api/tarifas</strong>
-        </header>
+      @if (puedeGestionarTarifas()) {
+        <form class="panel form-panel" [formGroup]="tarifaForm" (ngSubmit)="crearTarifa()">
+          <header>
+            <span>Nueva tarifa</span>
+          </header>
 
-        <div class="inline-fields">
-          <label>
-            <span>Sede</span>
-            <select formControlName="sedeId">
-              @for (sede of sedes(); track sede.id) {
-                <option [ngValue]="sede.id">{{ sede.nombre }}</option>
-              }
-            </select>
-          </label>
+          <div class="inline-fields">
+            <label>
+              <span>Sede</span>
+              <select formControlName="sedeId">
+                @for (sede of sedes(); track sede.id) {
+                  <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+                }
+              </select>
+            </label>
 
-          <label>
-            <span>Recurso</span>
-            <select formControlName="tipoRecursoId">
-              @for (tipo of tipos(); track tipo.id) {
-                <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
-              }
-            </select>
-          </label>
-        </div>
+            <label>
+              <span>Recurso</span>
+              <select formControlName="tipoRecursoId">
+                @for (tipo of tipos(); track tipo.id) {
+                  <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+                }
+              </select>
+            </label>
+          </div>
 
-        <div class="inline-fields">
-          <label>
-            <span>Moneda</span>
-            <select formControlName="monedaId">
-              @for (moneda of monedas(); track moneda.id) {
-                <option [ngValue]="moneda.id">{{ moneda.codigo }}</option>
-              }
-            </select>
-          </label>
+          <div class="inline-fields">
+            <label>
+              <span>Moneda</span>
+              <select formControlName="monedaId">
+                @for (moneda of monedas(); track moneda.id) {
+                  <option [ngValue]="moneda.id">{{ moneda.codigo }}</option>
+                }
+              </select>
+            </label>
 
-          <label>
-            <span>Costo unitario</span>
-            <input type="number" step="0.001" formControlName="costoUnitario" />
-          </label>
-        </div>
+            <label>
+              <span>Costo unitario</span>
+              <input type="number" step="0.001" formControlName="costoUnitario" />
+            </label>
+          </div>
 
-        <div class="inline-fields">
-          <label>
-            <span>Inicio</span>
-            <input type="date" formControlName="fechaInicio" />
-          </label>
+          <div class="inline-fields">
+            <label>
+              <span>Inicio</span>
+              <input type="date" formControlName="fechaInicio" />
+            </label>
 
-          <label>
-            <span>Fin opcional</span>
-            <input type="date" formControlName="fechaFin" />
-          </label>
-        </div>
+            <label>
+              <span>Fin opcional</span>
+              <input type="date" formControlName="fechaFin" />
+            </label>
+          </div>
 
-        <button type="submit" [disabled]="guardandoTarifa()">
-          {{ guardandoTarifa() ? 'Guardando' : 'Crear tarifa' }}
-        </button>
-      </form>
+          <button type="submit" [disabled]="guardandoTarifa()">
+            {{ guardandoTarifa() ? 'Guardando' : 'Crear tarifa' }}
+          </button>
+        </form>
+      }
 
       <form class="panel form-panel" [formGroup]="umbralForm" (ngSubmit)="crearUmbral()">
         <header>
           <span>Nuevo umbral</span>
-          <strong>POST /api/umbrales</strong>
         </header>
 
         <div class="inline-fields">
@@ -156,7 +148,6 @@
       <section class="panel">
         <header>
           <span>Tarifas</span>
-          <strong>GET /api/tarifas/vigente?sedeId=&tipoRecursoId=</strong>
         </header>
         <div class="table-wrap">
           <table>
@@ -185,7 +176,6 @@
       <section class="panel">
         <header>
           <span>Umbrales</span>
-          <strong>PUT/DELETE /api/umbrales</strong>
         </header>
         <div class="table-wrap">
           <table>
@@ -215,7 +205,6 @@
     <section class="panel alerts-panel">
       <header>
         <span>Alertas</span>
-        <strong>PATCH /api/alertas/id/atender</strong>
       </header>
       <div class="alerts">
         @for (alerta of alertas(); track alerta.id) {

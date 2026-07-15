@@ -9,9 +9,21 @@ export const USER_APP_ROUTES: Routes = [
     component: AppLayout,
     children: [
       {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'panel',
+      },
+      {
+        path: 'panel',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'GERENTE', 'OPERADOR'] },
+        loadComponent: () => import('./pages/role-panel/role-panel').then((m) => m.RolePanel),
+        title: 'Luxury - Panel',
+      },
+      {
         path: 'dashboard',
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA'] },
+        data: { roles: ['ADMIN', 'GERENTE', 'OPERADOR'] },
         loadComponent: () =>
           import('./domains/dashboard/executive-dashboard/executive-dashboard').then(
             (m) => m.ExecutiveDashboard,
@@ -22,7 +34,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'resources',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+          roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
         },
         loadComponent: () =>
           import('./domains/resources/pages/resources-overview/resources-overview').then(
@@ -34,7 +46,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'resources/energy',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+          roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
         },
         loadComponent: () =>
           import('./domains/resources/pages/energy-consumption/energy-consumption').then(
@@ -46,7 +58,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'resources/water',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+          roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
         },
         loadComponent: () =>
           import('./domains/resources/pages/water-consumption/water-consumption').then(
@@ -58,7 +70,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'resources/transactions',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'ANALISTA', 'GERENTE', 'OPERADOR'],
+          roles: ['ADMIN', 'GERENTE', 'OPERADOR'],
         },
         loadComponent: () =>
           import('./domains/resources/pages/transactions/transactions').then((m) => m.Transactions),
@@ -68,7 +80,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'financial-exchange',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'GERENTE'],
+          roles: ['ADMIN'],
         },
         loadComponent: () =>
           import('./domains/financial-exchange/financial-exchange/financial-exchange').then(
@@ -92,7 +104,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'audit',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'AUDITOR'],
+          roles: ['ADMIN', 'GERENTE'],
         },
         loadComponent: () =>
           import('./domains/audit/audit/audit').then((m) => m.Audit),
@@ -102,7 +114,7 @@ export const USER_APP_ROUTES: Routes = [
         path: 'reports',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA'],
+          roles: ['ADMIN', 'GERENTE'],
         },
         loadComponent: () =>
           import('./domains/reports/reports/reports').then((m) => m.Reports),
@@ -112,12 +124,12 @@ export const USER_APP_ROUTES: Routes = [
         path: 'session-monitoring',
         canActivate: [roleGuard],
         data: {
-          roles: ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA', 'OPERADOR'],
+          roles: ['ADMIN'],
         },
         loadComponent: () =>
           import('./domains/session-monitoring/session-monitoring/session-monitoring').then(
             (m) => m.SessionMonitoring,
-          ),
+        ),
         title: 'Luxury - Sesiones',
       },
     ],

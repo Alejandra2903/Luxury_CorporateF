@@ -1,0 +1,47 @@
+<section class="role-panel-page">
+  <header class="work-header">
+    <div>
+      <p class="eyebrow">{{ copy().eyebrow }}</p>
+      <h1>{{ copy().title }}</h1>
+      <span>{{ usuario()?.nombreCompleto }} - {{ usuario()?.sedeNombre }}</span>
+    </div>
+    <div class="work-date">
+      <span>Fecha de trabajo</span>
+      <strong>{{ fechaTrabajo() }}</strong>
+    </div>
+  </header>
+
+  <section class="welcome-panel">
+    <div>
+      <span>Resumen del dia</span>
+      <strong>{{ copy().subtitle }}</strong>
+    </div>
+    <p>{{ rolPrincipal() }}</p>
+  </section>
+
+  <div class="panel-grid">
+    @for (card of cards(); track card.title) {
+      <article class="panel-card">
+        <span>{{ card.title }}</span>
+        <strong>{{ card.value }}</strong>
+        <small>{{ card.detail }}</small>
+      </article>
+    }
+  </div>
+
+  <section class="actions-panel">
+    <header>
+      <span>Acciones disponibles</span>
+      <strong>{{ acciones().length }} tareas</strong>
+    </header>
+
+    <div class="actions-grid">
+      @for (accion of acciones(); track accion.label) {
+        <a class="action-card" [routerLink]="accion.route">
+          <span>{{ accion.label }}</span>
+          <p>{{ accion.detail }}</p>
+        </a>
+      }
+    </div>
+  </section>
+</section>

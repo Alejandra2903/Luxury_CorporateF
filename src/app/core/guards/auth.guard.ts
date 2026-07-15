@@ -3,11 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 
 import { AuthService } from '../services/auth.service';
 
-/**
- * Bloquea el acceso a rutas que requieren sesion activa. Si no hay
- * usuario autenticado, redirige a /login conservando la URL original
- * en queryParams para poder regresar a ella tras iniciar sesion.
- */
+
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);

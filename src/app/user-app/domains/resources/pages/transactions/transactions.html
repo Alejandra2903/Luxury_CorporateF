@@ -3,13 +3,63 @@
     <div>
       <p class="eyebrow">Transacciones</p>
       <h1>Transacciones de consumo</h1>
-      <p>Consulta mock de registros de consumo por sede, tipo de recurso y periodo.</p>
     </div>
   </header>
 
   @if (cargando()) {
-    <div class="state">Cargando transacciones mock...</div>
+    <div class="state">Cargando transacciones...</div>
   } @else {
+    @if (puedeRegistrar()) {
+      <form class="entry-form" [formGroup]="registroForm" (ngSubmit)="registrarConsumo()">
+        <header>
+          <span>Nuevo registro</span>
+          <strong>Consumo operativo</strong>
+        </header>
+
+        <label>
+          <span>Sede</span>
+          <select formControlName="sedeId">
+            @for (sede of sedes(); track sede.id) {
+              <option [ngValue]="sede.id">{{ sede.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Recurso</span>
+          <select formControlName="tipoRecursoId">
+            @for (tipo of tipos(); track tipo.id) {
+              <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Periodo</span>
+          <input type="month" formControlName="periodo" />
+        </label>
+
+        <label>
+          <span>Cantidad</span>
+          <input type="number" min="1" formControlName="cantidad" />
+        </label>
+
+        <label>
+          <span>Costo</span>
+          <input type="number" min="1" formControlName="costo" />
+        </label>
+
+        <label class="entry-form__wide">
+          <span>Observacion</span>
+          <input type="text" formControlName="observacion" placeholder="Opcional" />
+        </label>
+
+        <button type="submit" [disabled]="guardando()">
+          {{ guardando() ? 'Registrando...' : 'Registrar consumo' }}
+        </button>
+      </form>
+    }
+
     <form class="filters" [formGroup]="filtros">
       <label>
         <span>Sede</span>

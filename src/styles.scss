@@ -1,17 +1,15 @@
 @use 'styles/variables' as v;
-// Tokens de color (CSS custom properties, soportan [data-theme])
+
 @use 'styles/tokens';
 
-// Fuentes self-hosted (pesos 400/500/600 — ver design system: nunca 700+ salvo títulos grandes)
+
 @import '@fontsource/geist-sans/400.css';
 @import '@fontsource/geist-sans/500.css';
 @import '@fontsource/geist-sans/600.css';
 @import '@fontsource/geist-mono/400.css';
 @import '@fontsource/geist-mono/500.css';
 
-// ============================================================
-// Reset
-// ============================================================
+
 *,
 *::before,
 *::after {
@@ -24,8 +22,8 @@ body {
 }
 
 html {
-  // Evita flash de tema incorrecto: el theme.service setea data-theme
-  // sincrónicamente antes del primer paint (ver core/services/theme.service.ts)
+
+
   background: var(--bg);
 }
 
@@ -39,6 +37,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color v.$duration-base v.$ease-out, color v.$duration-base v.$ease-out;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4 {
@@ -76,7 +78,7 @@ ul, ol {
   list-style: none;
 }
 
-// Scrollbar discreto (Linear-style), no el default del SO
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -93,13 +95,13 @@ ul, ol {
   background: var(--text-tertiary);
 }
 
-// Focus visible consistente en toda la app
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-// Respeta preferencia de reducción de movimiento (frontend-design skill: quality floor)
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -118,4 +120,78 @@ ul, ol {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+@media (max-width: 760px) {
+  .content,
+  .content * {
+    min-width: 0;
+  }
+
+  .content h1 {
+    font-size: clamp(1.8rem, 10vw, 2.6rem);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  .content .page-header,
+  .content .work-header,
+  .content .panel header,
+  .content .actions-panel header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .content .panel,
+  .content .stat,
+  .content .message,
+  .content .state,
+  .content .welcome-panel,
+  .content .actions-panel,
+  .content .action-card,
+  .content .panel-card {
+    padding: 0.85rem;
+  }
+
+  .content .table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .content table {
+    max-width: none;
+  }
+
+  .content input,
+  .content select,
+  .content textarea,
+  .content button {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  body {
+    font-size: 0.94rem;
+  }
+
+  .content h1 {
+    font-size: clamp(1.65rem, 11vw, 2.25rem);
+  }
+
+  .content .actions,
+  .content .filter-actions,
+  .content .form-actions,
+  .content .row-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .content .actions button,
+  .content .filter-actions button,
+  .content .form-actions button {
+    width: 100%;
+  }
 }

@@ -5,7 +5,6 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { ApiError } from '../../../core/models/api-error.model';
-import { parseRoles } from '../../../core/models/usuario.model';
 
 @Component({
   selector: 'app-login',
@@ -27,10 +26,10 @@ export class Login {
     this.themeService.alternar();
   }
 
-  /** Mensaje de error de autenticación (401) a mostrar bajo el formulario. */
+
   readonly errorAutenticacion = signal<string | null>(null);
 
-  /** Estado de carga mientras la petición de login está en curso. */
+
   readonly cargando = signal(false);
 
   readonly form = this.fb.nonNullable.group({
@@ -72,12 +71,7 @@ export class Login {
     });
   }
 
-  private obtenerRutaInicial(roles: string): string {
-    const rolesUsuario = parseRoles(roles);
-    const puedeVerDashboard = rolesUsuario.some((rol) =>
-      ['ADMIN', 'GERENTE', 'AUDITOR', 'ANALISTA'].includes(rol),
-    );
-
-    return puedeVerDashboard ? '/dashboard' : '/resources';
+  private obtenerRutaInicial(_roles: string): string {
+    return '/panel';
   }
 }

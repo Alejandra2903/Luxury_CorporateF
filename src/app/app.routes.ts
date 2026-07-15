@@ -22,6 +22,23 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'registro',
+    loadComponent: () =>
+      import('./public/public-layout/public-layout').then((m) => m.PublicLayout),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./public/auth/register/register').then((m) => m.Register),
+        title: 'Luxury - Registro',
+      },
+    ],
+  },
+  {
+    path: 'layout',
+    canActivate: [authGuard],
+    loadChildren: () => import('./user-app/user-app.routes').then((m) => m.USER_APP_ROUTES),
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN'] },
@@ -35,6 +52,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'dashboard',
+    redirectTo: 'panel',
   },
 ];
