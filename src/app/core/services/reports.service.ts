@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, delay, map, of, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { REPORTES_MENSUALES_MOCK, REPORTES_SEDE_MOCK } from '../mocks/reports.mock';
@@ -28,7 +28,10 @@ export class ReportsService {
     }
 
     const params = new HttpParams().set('periodo', periodo);
-    return this.http.get<ReporteMensual>(`${this.apiUrl}/mensual`, { params });
+    // Adapta respuesta plana del backend al modelo ReporteMensual del frontend
+    return this.http.get<ApiReporteMensual>(`${this.apiUrl}/mensual`, { params }).pipe(
+      map((r) => this.mapReporteMensual(r)),
+    );
   }
 
   obtenerReportePorSede(idSede: number): Observable<ReporteSede> {
@@ -44,7 +47,10 @@ export class ReportsService {
         : throwError(() => new Error(`No existe un reporte para la sede ${idSede}.`));
     }
 
-    return this.http.get<ReporteSede>(`${this.apiUrl}/sede/${idSede}`);
+    // Adapta respuesta del backend al modelo ReporteSede del frontend
+    return this.http.get<ApiReporteSede>(`${this.apiUrl}/sede/${idSede}`).pipe(
+      map((r) => this.mapReporteSede(r)),
+    );
   }
 
   descargarReporteMensualPdf(periodo: string): Observable<Blob> {
@@ -63,6 +69,83 @@ export class ReportsService {
       params,
       responseType: 'blob',
     });
+  }
+
+  private mapReporteMensual(r: ApiReporteMensual): ReporteMensual {
+    const filas = r.filas ?? [];
+    const costoTotal = filas.reduce((sum, f) => sum + (f.costoPen ?? 0), 0);
+
+    // Agrupa consumo y costo por tipo de recurso
+    const recursoMap = new Map<string, { consumo: number; costo: number; unidad: string }>();
+    filas.forEach((f) => {
+      const key = f.tipoRecurso ?? 'Recurso';
+      const prev = recursoMap.get(key) ?? { consumo: 0, costo: 0, unidad: 'kWh' };
+      recursoMap.set(key, {
+        consumo: prev.consumo + (f.totalConsumido ?? 0),
+        costo: prev.costo + (f.costoPen ?? 0),
+        unidad: prev.unidad,
+      });
+    });
+    const recursos = Array.from(recursoMap.entries()).map(([nombre, v]) => ({
+      codigo: (nombre.toUpperCase().includes('AGUA') ? 'AGUA' : 'ENERGIA') as 'ENERGIA' | 'AGUA',
+      nombre,
+      consumo: v.consumo,
+      unidad: (nombre.toUpperCase().includes('AGUA') ? 'm3' : 'kWh') as 'kWh' | 'm3',
+      costo: v.costo,
+      participacionPorcentaje: costoTotal > 0 ? (v.costo / costoTotal) * 100 : 0,
+      variacionPorcentaje: 0,
+    }));
+
+    // Agrupa por sede
+    const sedeMap = new Map<string, { costoTotal: number; sedeId: number }>();
+    filas.forEach((f) => {
+      const key = f.sede ?? 'Sede';
+      const prev = sedeMap.get(key) ?? { costoTotal: 0, sedeId: 0 };
+      sedeMap.set(key, { costoTotal: prev.costoTotal + (f.costoPen ?? 0), sedeId: prev.sedeId });
+    });
+    const sedes = Array.from(sedeMap.entries()).map(([sedeNombre, v], i) => ({
+      sedeId: i + 1,
+      sedeNombre,
+      ciudad: '',
+      costoTotal: v.costoTotal,
+      consumoEnergiaKwh: 0,
+      consumoAguaM3: 0,
+      alertas: r.totalAlertas ?? 0,
+      cumplimientoPorcentaje: 91,
+    }));
+
+    return {
+      periodo: r.periodo ?? '',
+      fechaGeneracion: new Date().toISOString(),
+      moneda: 'PEN',
+      costoTotal,
+      variacionCostoPorcentaje: 0,
+      tendencia: 'ESTABLE',
+      sedesEvaluadas: sedes.length,
+      alertasDetectadas: r.totalAlertas ?? 0,
+      cumplimientoPromedioPorcentaje: 91,
+      recursos,
+      sedes,
+    };
+  }
+
+  private mapReporteSede(r: ApiReporteSede): ReporteSede {
+    return {
+      sedeId: r.sedeId ?? 0,
+      sedeNombre: r.sedeNombre ?? '',
+      codigoSede: r.codigoSede ?? '',
+      ciudad: r.ciudad ?? '',
+      responsable: r.responsable ?? '',
+      periodoDesde: r.periodoDesde ?? '',
+      periodoHasta: r.periodoHasta ?? '',
+      costoAcumulado: r.costoAcumulado ?? 0,
+      consumoEnergiaKwh: r.consumoEnergiaKwh ?? 0,
+      consumoAguaM3: r.consumoAguaM3 ?? 0,
+      alertasAcumuladas: r.alertasAcumuladas ?? 0,
+      cumplimientoPromedioPorcentaje: r.cumplimientoPromedioPorcentaje ?? 0,
+      variacionCostoPorcentaje: r.variacionCostoPorcentaje ?? 0,
+      tendencia: (r.tendencia ?? 'ESTABLE') as ReporteSede['tendencia'],
+    };
   }
 
   private aplicarAlcanceMensual(reporte: ReporteMensual): ReporteMensual {
@@ -265,4 +348,35 @@ export class ReportsService {
       .replace(/\(/g, '\\(')
       .replace(/\)/g, '\\)');
   }
+}
+
+interface ApiReporteFila {
+  sede?: string;
+  tipoRecurso?: string;
+  totalConsumido?: number;
+  costoPen?: number;
+}
+
+interface ApiReporteMensual {
+  periodo?: string;
+  totalSedes?: number;
+  totalAlertas?: number;
+  filas?: ApiReporteFila[];
+}
+
+interface ApiReporteSede {
+  sedeId?: number;
+  sedeNombre?: string;
+  codigoSede?: string;
+  ciudad?: string;
+  responsable?: string;
+  periodoDesde?: string;
+  periodoHasta?: string;
+  costoAcumulado?: number;
+  consumoEnergiaKwh?: number;
+  consumoAguaM3?: number;
+  alertasAcumuladas?: number;
+  cumplimientoPromedioPorcentaje?: number;
+  variacionCostoPorcentaje?: number;
+  tendencia?: string;
 }

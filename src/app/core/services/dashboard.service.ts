@@ -45,7 +45,21 @@ export class DashboardService {
       }).pipe(delay(this.mockDelayMs));
     }
 
-    return this.http.get<DashboardResumen>(`${this.apiUrl}/resumen`);
+    // HTTP real: adapta la respuesta del backend al modelo del frontend
+    return this.http.get<ApiDashboardResumen>(`${this.apiUrl}/resumen`).pipe(
+      map((r) => ({
+        periodo: r.periodo ?? '',
+        monedaBase: (r.moneda ?? 'PEN') as DashboardResumen['monedaBase'],
+        costoTotal: r.costoTotalPen ?? 0,
+        variacionCostoPorcentaje: r.variacionCostoPorcentaje ?? 0,
+        consumoEnergiaKwh: r.energiaKwh ?? 0,
+        consumoAguaM3: r.aguaM3 ?? 0,
+        sedesActivas: r.totalSedes ?? 0,
+        alertasActivas: r.totalAlertas ?? 0,
+        cumplimientoUmbralesPorcentaje: r.cumplimientoUmbralesPorcentaje ?? 0,
+        ultimaActualizacion: r.ultimaActualizacion ?? new Date().toISOString(),
+      })),
+    );
   }
 
   obtenerConsumoPorSede(): Observable<ConsumoPorSede[]> {
@@ -158,4 +172,17 @@ interface ApiTipoCambio {
   monedaOrigenCodigo: string;
   monedaDestinoCodigo: string;
   tasa: number;
+}
+
+interface ApiDashboardResumen {
+  periodo: string;
+  moneda: string;
+  costoTotalPen: number;
+  variacionCostoPorcentaje: number;
+  energiaKwh: number;
+  aguaM3: number;
+  totalSedes: number;
+  totalAlertas: number;
+  cumplimientoUmbralesPorcentaje: number;
+  ultimaActualizacion: string;
 }

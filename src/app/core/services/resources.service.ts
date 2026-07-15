@@ -153,21 +153,51 @@ export class ResourcesService {
   }
 
   obtenerResumenRecursos(): Observable<ResourcesResumen> {
-    if (!environment.useMocks) {
-      return of(RESOURCES_RESUMEN_MOCK).pipe(delay(this.mockDelayMs));
+    // MOCK DESHABILITADO — useMocks = false
+    // if (!environment.useMocks) {
+    //   return of(RESOURCES_RESUMEN_MOCK).pipe(delay(this.mockDelayMs));
+    // }
+    // const sedes = this.accessScope.filtrarSedes(this.storage.obtenerLista(this.sedesKey, SEDES_MOCK));
+    // const consumos = this.accessScope.filtrarPorSede(
+    //   this.storage.obtenerLista(this.consumosKey, CONSUMOS_MOCK),
+    // );
+    // const consumosMes = consumos.filter((consumo) => consumo.periodo === '2026-06');
+    // return of({
+    //   sedesActivas: sedes.filter((sede) => sede.activa).length,
+    //   consumosMes: consumosMes.length,
+    //   costoTotalMes: consumosMes.reduce((total, consumo) => total + consumo.costo, 0),
+    //   registrosObservados: consumos.filter((consumo) => consumo.estado === 'OBSERVADO').length,
+    // }).pipe(delay(this.mockDelayMs));
+
+    if (environment.useMocks) {
+      const sedes = this.accessScope.filtrarSedes(this.storage.obtenerLista(this.sedesKey, SEDES_MOCK));
+      const consumos = this.accessScope.filtrarPorSede(
+        this.storage.obtenerLista(this.consumosKey, CONSUMOS_MOCK),
+      );
+      const consumosMes = consumos.filter((consumo) => consumo.periodo === '2026-06');
+
+      return of({
+        sedesActivas: sedes.filter((sede) => sede.activa).length,
+        consumosMes: consumosMes.length,
+        costoTotalMes: consumosMes.reduce((total, consumo) => total + consumo.costo, 0),
+        registrosObservados: consumos.filter((consumo) => consumo.estado === 'OBSERVADO').length,
+      }).pipe(delay(this.mockDelayMs));
     }
 
-    const sedes = this.accessScope.filtrarSedes(this.storage.obtenerLista(this.sedesKey, SEDES_MOCK));
-    const consumos = this.accessScope.filtrarPorSede(
-      this.storage.obtenerLista(this.consumosKey, CONSUMOS_MOCK),
+    // HTTP real: usa el resumen del dashboard que agrega los datos necesarios
+    return this.http.get<ApiDashboardResumen>(`${this.apiBaseUrl}/dashboard/resumen`).pipe(
+      map((r) => ({
+        sedesActivas: r.totalSedes ?? 0,
+        consumosMes: 0, // el backend no expone este dato en el resumen
+        costoTotalMes: r.costoTotalPen ?? 0,
+        registrosObservados: r.totalAlertas ?? 0,
+      })),
     );
-    const consumosMes = consumos.filter((consumo) => consumo.periodo === '2026-06');
-
-    return of({
-      sedesActivas: sedes.filter((sede) => sede.activa).length,
-      consumosMes: consumosMes.length,
-      costoTotalMes: consumosMes.reduce((total, consumo) => total + consumo.costo, 0),
-      registrosObservados: consumos.filter((consumo) => consumo.estado === 'OBSERVADO').length,
-    }).pipe(delay(this.mockDelayMs));
   }
+}
+
+interface ApiDashboardResumen {
+  costoTotalPen: number;
+  totalSedes: number;
+  totalAlertas: number;
 }

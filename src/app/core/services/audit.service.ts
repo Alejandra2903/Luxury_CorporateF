@@ -22,7 +22,10 @@ export class AuditService {
     if (environment.useMocks) {
       return of(this.filtrarAuditoriasPorAlcance(AUDITORIAS_MOCK)).pipe(delay(this.mockDelayMs));
     }
-    return this.http.get<Auditoria[]>(`${this.apiBaseUrl}/auditorias`);
+    // Adapta la respuesta del backend al modelo del frontend
+    return this.http.get<ApiAuditoria[]>(`${this.apiBaseUrl}/auditorias`).pipe(
+      map((items) => items.map((a) => this.mapAuditoria(a))),
+    );
   }
 
   obtenerAuditoriasPorUsuario(id: number): Observable<Auditoria[]> {
@@ -31,7 +34,9 @@ export class AuditService {
         map((auditorias) => auditorias.filter((auditoria) => auditoria.usuarioId === id)),
       );
     }
-    return this.http.get<Auditoria[]>(`${this.apiBaseUrl}/auditorias/usuario/${id}`);
+    return this.http.get<ApiAuditoria[]>(`${this.apiBaseUrl}/auditorias/usuario/${id}`).pipe(
+      map((items) => items.map((a) => this.mapAuditoria(a))),
+    );
   }
 
   obtenerAuditoriasPorModulo(modulo: AuditModulo): Observable<Auditoria[]> {
@@ -40,14 +45,18 @@ export class AuditService {
         map((auditorias) => auditorias.filter((auditoria) => auditoria.modulo === modulo)),
       );
     }
-    return this.http.get<Auditoria[]>(`${this.apiBaseUrl}/auditorias/modulo/${modulo}`);
+    return this.http.get<ApiAuditoria[]>(`${this.apiBaseUrl}/auditorias/modulo/${modulo}`).pipe(
+      map((items) => items.map((a) => this.mapAuditoria(a))),
+    );
   }
 
   obtenerEventosAcceso(): Observable<EventoAcceso[]> {
     if (environment.useMocks) {
       return of(this.filtrarAccesosPorAlcance(EVENTOS_ACCESO_MOCK)).pipe(delay(this.mockDelayMs));
     }
-    return this.http.get<EventoAcceso[]>(`${this.apiBaseUrl}/eventos-acceso`);
+    // El backend no implementa un endpoint de EventoAcceso con la misma estructura;
+    // retornamos array vacío para evitar errores en los componentes.
+    return of([]);
   }
 
   obtenerResumen(): Observable<AuditResumen> {
@@ -69,6 +78,24 @@ export class AuditService {
     );
   }
 
+  private mapAuditoria(a: ApiAuditoria): Auditoria {
+    return {
+      id: a.id,
+      usuarioId: a.usuarioId ?? 0,
+      usuarioNombre: a.usuarioNombre ?? 'Sistema',
+      usuarioRol: (a.usuarioRol ?? 'OPERADOR') as Auditoria['usuarioRol'],
+      sedeId: null,
+      modulo: (a.modulo ?? 'ADMIN') as AuditModulo,
+      accion: (a.accion ?? 'CONSULTA') as Auditoria['accion'],
+      descripcion: a.descripcion ?? '',
+      entidad: a.tabla,
+      entidadId: a.registroId,
+      ipOrigen: '',
+      fechaEvento: a.fecha ?? new Date().toISOString(),
+      resultado: 'EXITOSO',
+    };
+  }
+
   private filtrarAuditoriasPorAlcance(auditorias: Auditoria[]): Auditoria[] {
     if (this.accessScope.esAdmin()) {
       return auditorias;
@@ -87,3 +114,17 @@ export class AuditService {
     return accesos.filter((acceso) => acceso.sedeId === sedeId);
   }
 }
+
+interface ApiAuditoria {
+  id: number;
+  usuarioId?: number;
+  usuarioNombre?: string;
+  usuarioRol?: string;
+  modulo?: string;
+  accion?: string;
+  tabla?: string;
+  registroId?: number;
+  descripcion?: string;
+  fecha?: string;
+}
+

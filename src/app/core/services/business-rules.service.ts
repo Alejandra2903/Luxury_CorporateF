@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, map, of, throwError } from 'rxjs';
+import { Observable, delay, forkJoin, map, of, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
@@ -234,28 +234,47 @@ export class BusinessRulesService {
   }
 
   obtenerResumen(): Observable<BusinessRulesResumen> {
-    if (!environment.useMocks) {
-      return of(BUSINESS_RULES_RESUMEN_MOCK).pipe(delay(this.mockDelayMs));
+    // MOCK DESHABILITADO — useMocks = false
+    // if (!environment.useMocks) {
+    //   return of(BUSINESS_RULES_RESUMEN_MOCK).pipe(delay(this.mockDelayMs));
+    // }
+    // const tarifas = this.accessScope.filtrarPorSede(...);
+    // ...
+
+    if (environment.useMocks) {
+      const tarifas = this.accessScope.filtrarPorSede(
+        this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK),
+      );
+      const umbrales = this.accessScope.filtrarPorSede(
+        this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK),
+      );
+      const alertas = this.accessScope.filtrarPorSede(
+        this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK),
+      );
+
+      return of({
+        tarifasVigentes: tarifas.filter((tarifa) => tarifa.vigente).length,
+        umbralesActivos: umbrales.filter((umbral) => umbral.activo).length,
+        alertasPendientes: alertas.filter((alerta) => !alerta.atendida).length,
+        alertasCriticas: alertas.filter(
+          (alerta) => !alerta.atendida && alerta.severidad === 'CRITICA',
+        ).length,
+      }).pipe(delay(this.mockDelayMs));
     }
 
-    const tarifas = this.accessScope.filtrarPorSede(
-      this.storage.obtenerLista(this.tarifasKey, TARIFAS_MOCK),
+    // HTTP real: combina tarifas + umbrales + alertas del backend
+    return forkJoin({
+      tarifas: this.http.get<ApiBrTarifa[]>(`${this.apiBaseUrl}/tarifas`),
+      umbrales: this.http.get<ApiBrUmbral[]>(`${this.apiBaseUrl}/umbrales`),
+      alertas: this.http.get<ApiBrAlerta[]>(`${this.apiBaseUrl}/alertas`),
+    }).pipe(
+      map(({ tarifas, umbrales, alertas }) => ({
+        tarifasVigentes: tarifas.filter((t) => t.vigente).length,
+        umbralesActivos: umbrales.filter((u) => u.activo).length,
+        alertasPendientes: alertas.filter((a) => !a.atendida).length,
+        alertasCriticas: alertas.filter((a) => !a.atendida && a.severidad === 'CRITICA').length,
+      })),
     );
-    const umbrales = this.accessScope.filtrarPorSede(
-      this.storage.obtenerLista(this.umbralesKey, UMBRALES_MOCK),
-    );
-    const alertas = this.accessScope.filtrarPorSede(
-      this.storage.obtenerLista(this.alertasKey, ALERTAS_MOCK),
-    );
-
-    return of({
-      tarifasVigentes: tarifas.filter((tarifa) => tarifa.vigente).length,
-      umbralesActivos: umbrales.filter((umbral) => umbral.activo).length,
-      alertasPendientes: alertas.filter((alerta) => !alerta.atendida).length,
-      alertasCriticas: alertas.filter(
-        (alerta) => !alerta.atendida && alerta.severidad === 'CRITICA',
-      ).length,
-    }).pipe(delay(this.mockDelayMs));
   }
 
   private mapearTarifa(id: number, request: CrearTarifaRequest, vigente: boolean): Tarifa {
@@ -296,3 +315,7 @@ export class BusinessRulesService {
     };
   }
 }
+
+interface ApiBrTarifa { vigente: boolean; }
+interface ApiBrUmbral { activo: boolean; }
+interface ApiBrAlerta { atendida: boolean; severidad: string; }
